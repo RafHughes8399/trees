@@ -4,5 +4,5 @@
 #pragma once
 
 #include <iostream>
-
+#include "tree.h"
 // TODO: Reference additional headers your program requires here.

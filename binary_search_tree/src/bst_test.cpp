@@ -4,9 +4,6 @@
 
 // do int, char, and custmon type that can be compared
 TEST_CASE("tree construction and accessors int ") {
-	// make an empty tree
-	auto tree = tree::BinarySearchTree<int>();
-	
 	// insert root leaf node
 	auto root = tree::BinarySearchTree<int>(1);
 	CHECK(root.data() == 1);
@@ -37,4 +34,18 @@ TEST_CASE("tree insertion int") {
 
 }
 
+TEST_CASE("tree insert multiple levels int") {
+	//auto root = tree::BinarySearchTree<int>();
+}
 
+TEST_CASE("tree insertion char") {
+	auto root = tree::BinarySearchTree<char>('f');
+	CHECK(root.data() == 'f');
+
+	root.insert('a');
+	root.insert('r');
+
+	CHECK(root.size() == 3);
+	CHECK(root.left()->data() == 'a');
+	CHECK(root.right()->data() == 'r');
+}

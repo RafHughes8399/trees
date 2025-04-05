@@ -11,9 +11,6 @@ namespace tree {
 		~BinarySearchTree() = default;
 		
 		// empty tree construction
-		BinarySearchTree()
-			: data_{ T() }, left_{ nullptr }, right_{ nullptr } {
-		}
 		// tree with root node construction, has data and no children
 		BinarySearchTree(const T& root)
 			: data_{ root }, left_{ nullptr }, right_{ nullptr } {
@@ -31,7 +28,18 @@ namespace tree {
 			balance(*this, n / 2);
 		}
 
-		BinarySearchTree(const BinarySearchTree& other);
+		BinarySearchTree(const BinarySearchTree& other)
+			: data_{ other.data_ }, left_{ nullptr }, right_{ nullptr } {
+			// Recursively copy left subtree if it exists
+			if (other.left_) {
+				left_ = std::make_unique<BinarySearchTree>(*other.left_);
+			}
+			// Recursively copy right subtree if it exists
+			if (other.right_) {
+				right_ = std::make_unique<BinarySearchTree>(*other.right_);
+			}
+		}
+
 
 		BinarySearchTree(BinarySearchTree&& other) noexcept;
 
@@ -53,7 +61,11 @@ namespace tree {
 		// INSERTION AND DELETION
 		// insert a new node with data, for now without tree balancing
 		BinarySearchTree& insert(const T& data) {
-			
+			if (data_ == T()) {
+				// if empty tree, set root
+				std::cout << "fill root " << std::endl;
+				data_ = data;
+			}
 			if (data < data_) {
 				// go left, insert if leaf
 				if (left_ == nullptr) {
@@ -102,26 +114,32 @@ namespace tree {
 		}
 
 		void prefix_traversal() const {
-			std::cout << data_ << " , ";
+			std::cout << data_ << std::endl;
 			if (left_ != nullptr) {
 				left_->prefix_traversal();
 			}
-			else if (right != nullptr) {
+			if (right_ != nullptr) {
 				right_->prefix_traversal();
 			}
-			std::cout << std::endl;
 		}
 		void infix_traversal() const {
 			if (left_ != nullptr) {
 				left_->infix_traversal();
 			}
-			std::cout << data_ << ", ";
+			std::cout << data_ << std::endl;
 			if (right_ != nullptr) {
 				right_->infix_traversal();
 			}
-			std::cout << std::endl;
 		}
-		void postfix_traversal() const;
+		void postfix_traversal() const {
+			if (left_ != nullptr) {
+				left_->postfix_traversal();
+			}
+			if (right_ != nullptr) {
+				right_->postfix_traversal();
+			}
+			std::cout << data_ << std::endl;
+		}
 
 
 		// ROTATION AND BALANCING
@@ -136,7 +154,6 @@ namespace tree {
 		
 		// OPERATOR OVERLOADS
 		std::ostream& operator<<(std::ostream& os) const {
-			auto data = std::to_string(data_);
 			os << data_;
 			return os;
 		}
