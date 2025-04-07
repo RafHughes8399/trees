@@ -83,26 +83,97 @@ TEST_CASE("insertion order char") {
 }
 
 TEST_CASE("size int ") {
-
+	auto tree = tree::BinarySearchTree<int>();
+	for (auto i = 0; i < 10; ++i) {
+		tree.insert(i);
+		CHECK(tree.size() == i + 1);
+	}
 }
 
 TEST_CASE("size char") {
-
+	auto tree = tree::BinarySearchTree<char>();
+	auto size = 1;
+	for (auto i = 'a'; i < 'f'; ++i) {
+		tree.insert(i);
+		CHECK(tree.size() == size);
+		size++;
+	}
 }
 
-TEST_CASE("tree height empty tree") {
+
+TEST_CASE("tree height root") {
+	auto tree = tree::BinarySearchTree<int>();
+	tree.insert(1);
+	CHECK(tree.height() == 0);
 }
 
-TEST_CASE("tree height root node") {
+TEST_CASE("tree height, left and right child ") {
+	auto tree = tree::BinarySearchTree<int>();
+	tree.insert(1);
+	tree.insert(0);
+	CHECK(tree.size() == 2);
 
+	CHECK(tree.height() == 1);
+	
 }
-
-TEST_CASE("tree height, left and right same ") {
-
-}
+/* 
 TEST_CASE("tree height, left > right") {
+	auto tree = tree::BinarySearchTree<int>();
+	tree.insert(2);
+	tree.insert(0);
+	tree.insert(-1);
+	tree.insert(1);
+
+	CHECK(tree.height() == 2);
+
+	auto another_tree = tree::BinarySearchTree<int>();
+	another_tree.insert(2);
+	another_tree.insert(3);
+	another_tree.insert(1);
+	another_tree.insert(0);
+
+	CHECK(another_tree.height() == 2);
+	
+	auto third_tree = tree::BinarySearchTree<int>();
+	third_tree.insert(2);
+	third_tree.insert(3);
+	third_tree.insert(0);
+	third_tree.insert(1);
+
+	CHECK(third_tree.height() == 2);
+
 
 }
 TEST_CASE("tree height, right > left") {
+	auto tree = tree::BinarySearchTree<int>();
+	tree.insert(0);
+	tree.insert(1);
+	tree.insert(2);
 
+	CHECK(tree.height() == 2);
+
+	auto another_tree = tree::BinarySearchTree<int>();
+	another_tree.insert(1);
+	another_tree.insert(0);
+	another_tree.insert(3);
+	another_tree.insert(2);
+	another_tree.insert(4);
+
+	CHECK(another_tree.height() == 2);
 }
+
+TEST_CASE("more intricate insertion, checking height and size") {
+	auto tree = tree::BinarySearchTree<int>();
+	tree.insert(1);
+	tree.insert(-1);
+	tree.insert(2);
+	tree.insert(0);
+
+	CHECK(tree.size() == 4);
+	CHECK(tree.left()->data_ == -1);
+	CHECK(tree.right()->data_ == 2);
+
+	CHECK(tree.size() == 4);
+	//CHECK(tree.height() == 2);
+}
+*/

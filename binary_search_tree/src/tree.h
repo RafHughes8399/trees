@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <iostream>
 
+
+
+// the private methods take a node* tree, the public methods 
+// call the private method and pass in root_
 namespace tree {
 	template <typename T>
 	class BinarySearchTree {
@@ -16,6 +20,7 @@ namespace tree {
 	private:
 
 		node* root_;
+
 		// INSERTION AND DELETION
 		node* insert(const T& data, node* tree) {
 			if (tree == nullptr) {
@@ -37,7 +42,7 @@ namespace tree {
 		}
 
 		// delete a node with data
-		node* erase(const T& data, node& tree) {
+		node* erase(const T& data, node* tree) {
 			// Implementation needed
 			return nullptr;
 		}
@@ -49,6 +54,23 @@ namespace tree {
 			}
 			else {
 				return size_t(1 + size(tree->left_) + size(tree->right_));
+			}
+		}
+
+		size_t height(node* tree) const {
+			if (tree == nullptr) {
+				return -1;
+				std::cout << "null node " << std::endl;
+			}
+			else {
+				int left_height = height(tree->left_);
+				int right_height = height(tree->right_);
+				if (left_height > right_height) {					
+					return 1 + left_height;
+				}
+				else {
+					return 1 + right_height;
+				}
 			}
 		}
 
@@ -73,6 +95,25 @@ namespace tree {
 			return nullptr;
 		}
 
+
+
+		// BALANCING, ROTATING AND PARTITIONING
+		node* balance(node* tree, int index) {
+			return nullptr;
+		}
+
+		// TRAVERSAL
+		void infix(node* tree) const {
+			if (tree != nullptr) {
+				if (tree->left_ != nullptr) {
+					infix(tree->left_);
+				}
+				std::cout << tree->data_ << std::endl;
+				if (tree->right_ != nullptr) {
+					infix(tree->right_);
+				}
+			}
+		}
 	public:
 		~BinarySearchTree() = default;
 
@@ -91,24 +132,23 @@ namespace tree {
 		}
 
 		template<typename InputIt>
-		BinarySearchTree(InputIt first, InputIt last) {
-		
-		}
+		BinarySearchTree(InputIt first, InputIt last)
+			// start with an empty tree 
+			: BinarySearchTree() {
+			auto num = std::distance(first, last);
+			for (auto it = first; it != last; ++it) {
+				insert(*it);
+			}
+
+			// move through the rest of the list and insert
+			// then balance
+			//balance(num / 2);
+
+			}
+
 
 		BinarySearchTree(const BinarySearchTree& other)
 			: root_(other.root_) {
-		}
-
-		void insert(const T& data) {
-			root_ = insert(data, root_);
-		}
-
-		int size() const {
-			return size(root_);
-		}
-
-		bool contains(const T& data) const {
-			return contains(data, root_);
 		}
 		BinarySearchTree(BinarySearchTree&& other) noexcept {
 			
@@ -121,6 +161,15 @@ namespace tree {
 			return *this;
 		}
 
+
+		// INSERTION AND DELETION
+		void insert(const T& data) {
+			root_ = insert(data, root_);
+		}
+
+		void erase(const T& data) {
+			root_ = erase(data, root_);
+		}
 		// ACCESSOR
 
 		node* root() const {
@@ -133,13 +182,22 @@ namespace tree {
 			return root_->right_;
 		}
 
-		// TRAVERSAL AND TRAITS
 
-		// get tree height
+		// SIZE AND HEIGHT
+		int size() const {
+			return size(root_);
+		}
 		int height() const {
-			return 1;
+			return height(root_);
 		}
 
+		// CONTAINS AND FIND
+
+		bool contains(const T& data) const {
+			return contains(data, root_);
+		}
+
+		// TRAVERSAL AND TRAITS
 		void prefix_traversal() const {
 			std::cout << root_->data_ << std::endl;
 			if (root_->left_ != nullptr) {
@@ -150,13 +208,7 @@ namespace tree {
 			}
 		}
 		void infix_traversal() const {
-			if (root_->left_ != nullptr) {
-				root_->left_->infix_traversal();
-			}
-			std::cout << root_->data_ << std::endl;
-			if (root_->right_ != nullptr) {
-				root_->right_->infix_traversal();
-			}
+			infix(root_);
 		}
 		void postfix_traversal() const {
 			if (root_->left_ != nullptr) {
@@ -183,8 +235,8 @@ namespace tree {
 			return;
 		}
 
-		void balance(BinarySearchTree& tree, int index) {
-			
+		void balance(int index) {
+			root_ = balance(root_, index);
 		}
 
 		// OPERATOR OVERLOADS
@@ -196,9 +248,5 @@ namespace tree {
 		bool operator==(const BinarySearchTree& other) const {
 			return false;
 		}
-
-		class AVLTree {
-
-		};
 	};
 }
