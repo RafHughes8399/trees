@@ -6,12 +6,12 @@
 add_executable (binary_search_tree "src/client.cpp" "src/binary_search_tree.h" "src/tree.h" "src/tree.cpp" "src/bst_test.cpp" "src/avl_tree_test.cpp")
 
 
-add_executable(client src/client.cpp)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET binary_search_tree PROPERTY CXX_STANDARD 20)
 endif()
 
+add_executable(client src/client.cpp)
 # TODO: Add tests and install targets if needed.
 enable_testing()
 add_library(catch2_main lib/catch2_main.cpp)

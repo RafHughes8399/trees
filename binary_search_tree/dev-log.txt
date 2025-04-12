@@ -1,0 +1,11 @@
+
+
+TODO:
+-> erase 
+-> pre fix
+-> post fix 
+
+-> rotation
+-> join
+-> balance 
+-> partition

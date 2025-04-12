@@ -13,4 +13,8 @@ int main(){
 	another_tree.insert(4);
 
 	another_tree.infix_traversal();
+
+	another_tree.prefix_traversal();
+
+	another_tree.postfix_traversal();
 }

@@ -43,7 +43,7 @@ namespace tree {
 
 		// delete a node with data
 		node* erase(const T& data, node* tree) {
-			// Implementation needed
+			// TODO needed
 			return nullptr;
 		}
 
@@ -126,6 +126,31 @@ namespace tree {
 				}
 			}
 		}
+
+		void prefix(node* tree) const {
+			if (tree != nullptr) {
+				std::cout << tree->data_ << std::endl;
+				if (tree->left_ != nullptr) {
+					prefix(tree->left_);
+				}
+				if (tree->right_ != nullptr) {
+					prefix(tree->right_);
+				}
+			}
+		}
+
+		void postfix(node* tree) const {
+			if (tree != nullptr) {
+				if (tree->left_ != nullptr) {
+					postfix(tree->left_);
+				}
+				if (tree->right_ != nullptr) {
+					postfix(tree->right_);
+				}
+				std::cout << tree->data_ << std::endl;
+			}
+
+		}
 	public:
 		~BinarySearchTree() = default;
 
@@ -157,12 +182,12 @@ namespace tree {
 			//balance(num / 2);
 
 			}
-
+		// INIT LIST CONSTRUCTOR
 		BinarySearchTree(std::initializer_list<T> list)
 			: BinarySearchTree(list.begin(), list.end()) {
 		}
 
-		//TODO copy and move 
+		// COPY AND MOVE CONSTRUCTORS AND OVERLOADS
 		BinarySearchTree(const BinarySearchTree& other)
 			: root_(other.root_) {
 		}
@@ -186,8 +211,8 @@ namespace tree {
 		void erase(const T& data) {
 			root_ = erase(data, root_);
 		}
-		// ACCESSOR
 
+		// ACCESSORS
 		node* root() const {
 			return root_;
 		}
@@ -208,44 +233,26 @@ namespace tree {
 		}
 
 		// CONTAINS AND FIND
-
 		bool contains(const T& data) const {
 			return contains(data, root_);
 		}
 
-		//TODO: find
 		node* find(const T& data) const {
 			return find(data, root_);
 		}
 		
-
-
 		// TRAVERSAL AND TRAITS
-		
-		// TODO: public prefix
 		void prefix_traversal() const {
-			std::cout << root_->data_ << std::endl;
-			if (root_->left_ != nullptr) {
-				root_->left_->prefix_traversal();
-			}
-			if (root_->right_ != nullptr) {
-				root_->right_->prefix_traversal();
-			}
+			prefix(root_);
 		}
 		void infix_traversal() const {
 			infix(root_);
 		}
 
-		//TODO  public postfix
 		void postfix_traversal() const {
-			if (root_->left_ != nullptr) {
-				root_->left_->postfix_traversal();
-			}
-			if (root_->right_ != nullptr) {
-				root_->right_->postfix_traversal();
-			}
-			std::cout << root_->data_ << std::endl;
+			postfix(root_);
 		}
+
 
 		// TODO ROTATION AND BALANCING
 		void join(BinarySearchTree& other) {
@@ -265,6 +272,7 @@ namespace tree {
 		void balance(int index) {
 			root_ = balance(root_, index);
 		}
+		
 
 		// OPERATOR OVERLOADS
 		friend std::ostream& operator<<(std::ostream& os, const BinarySearchTree& tree) {

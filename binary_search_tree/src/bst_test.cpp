@@ -286,3 +286,8 @@ TEST_CASE("does not contain and cannot find int") {
 	CHECK(tree.contains(7) == false);
 	CHECK(tree.find(10) == nullptr);
 }
+
+
+TEST_CASE("tree traversal int ") {
+	auto tree = tree::BinarySearchTree<int>({6,2,9, 3, -2, 11, 1, 5, 8, -6, 12});
+}
