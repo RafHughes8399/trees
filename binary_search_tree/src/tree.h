@@ -60,7 +60,6 @@ namespace tree {
 		size_t height(node* tree) const {
 			if (tree == nullptr) {
 				return -1;
-				std::cout << "null node " << std::endl;
 			}
 			else {
 				int left_height = height(tree->left_);
@@ -92,7 +91,20 @@ namespace tree {
 		}
 
 		node* find(const T& data, node* tree) const {
-			return nullptr;
+			if (tree == nullptr) {
+				return nullptr;
+			}
+			else {
+				if (data < tree->data_) {
+					return find(data, tree->left_);
+				}
+				else if (data > tree->data_) {
+					return find(data, tree->right_	);
+				}
+				else {
+					return tree;
+				}
+			}
 		}
 
 
@@ -146,7 +158,11 @@ namespace tree {
 
 			}
 
+		BinarySearchTree(std::initializer_list<T> list)
+			: BinarySearchTree(list.begin(), list.end()) {
+		}
 
+		//TODO copy and move 
 		BinarySearchTree(const BinarySearchTree& other)
 			: root_(other.root_) {
 		}
@@ -197,7 +213,16 @@ namespace tree {
 			return contains(data, root_);
 		}
 
+		//TODO: find
+		node* find(const T& data) const {
+			return find(data, root_);
+		}
+		
+
+
 		// TRAVERSAL AND TRAITS
+		
+		// TODO: public prefix
 		void prefix_traversal() const {
 			std::cout << root_->data_ << std::endl;
 			if (root_->left_ != nullptr) {
@@ -210,6 +235,8 @@ namespace tree {
 		void infix_traversal() const {
 			infix(root_);
 		}
+
+		//TODO  public postfix
 		void postfix_traversal() const {
 			if (root_->left_ != nullptr) {
 				root_->left_->postfix_traversal();
@@ -220,7 +247,7 @@ namespace tree {
 			std::cout << root_->data_ << std::endl;
 		}
 
-		// ROTATION AND BALANCING
+		// TODO ROTATION AND BALANCING
 		void join(BinarySearchTree& other) {
 			return;
 		}
