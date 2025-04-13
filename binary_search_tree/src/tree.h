@@ -21,42 +21,62 @@ namespace tree {
 
 		node* root_;
 
+//------------- MIN AND MAX -------------------------------------------
+		node* min(node* tree) const {
+			// go as far left as possible
+			if (tree == nullptr) { return nullptr; }
+			auto current = tree;
+			while (current->left_ != nullptr) {
+				current = current->left_;
+			}
+			return current;
+		}
+		node* max(node* tree) const {
+			// same logic as left, just with the right subtree instead
+			if (tree == nullptr) { return nullptr; }
+			auto current = tree;
+			while (current->right_ != nullptr) {
+				current = current->right_;
+			}
+			return current;
+		}
 
-		// JOIN, ROTATION AND BALANCING 
-		
+//-------- JOIN, ROTATE, BALANCE AND PARTITION-----------------------------
 		node* join(node* tree1, node* tree2) {
-			// assumes that tree1 max is less than tree2 min 
+			// assumes that max t1 < min t2
+			if (tree1 == nullptr) { return tree2; }
+			else if (tree2 == nullptr) { return tree1; }
+			else {
+				node* current = tree2;
+				node* parent = nullptr;
+				// find the minimum node in tree 2	
+				while (current->left_ != nullptr) {
+					parent = current;
+					current = current->left_;
 
-			//pseudocode 
-			/**
-			 *  if t1 empty return t2
-			 * if t2 empty return t1
-			 * 
-			 * otherwise
-			 *	current = t2
-			 *	parent = null
-			 * while current->left is not null
-			 *	parent = current
-			 *	current = current->left
-			 * 
-			 * 
-			 * this finds the minimum of t2
-			 * if parent not null
-			 *	parent->left = current->right
-			 * current->right = t2
-			 * 
-			 * 
-			 * attaches t1 to the left of the minimum node in t2
-			 * current->left = t1 
-			 * return current
-			 * .
-			 */
+				}
+				if (parent != nullptr) {
+					// replace min by its right subtree if it exists (to make space for tree1)
+					parent->left_ = current->right_;
+					// elevate min to the root node of the new tree
+					current->right_ = tree2;
+				}
+				// attach tree1 to the left 
+				current->left_ = tree1;
+				return current;
+			}
+			
 			
 
 
 			return tree1; // placeholder return;
 		}
-		// INSERTION AND DELETION
+
+		node* balance(node* tree, int index) {
+			return nullptr;
+		}
+
+//--------INSERT AND ERASE-------------------
 		node* insert(const T& data, node* tree) {
 			if (tree == nullptr) {
 				tree = new node();
@@ -84,77 +104,41 @@ namespace tree {
 			}
 			else {
 				// traverse the tree to find the node
-				if (data < tree->data_) {
-					tree->left_ = erase(data, tree->left_);
-				}
-				else if (data > tree->data_) {
-					tree->right_ = erase(data, tree->right_);
-				}
+				if (data < tree->data_) {tree->left_ = erase(data, tree->left_);}
+				else if (data > tree->data_) {tree->right_ = erase(data, tree->right_);}
 				else {
-					// case 1 : no children, just remove the root / leaf 
 					auto new_tree = tree;
-					if (tree->left_ == nullptr and tree->right_ == nullptr) {
-						new_tree = nullptr;
-					}
+					
+					// case 1 : no children, just remove the root / leaf 
+					if (tree->left_ == nullptr and tree->right_ == nullptr) {new_tree = nullptr;}
+					
 					// case 2 : only right child, repositioning the right child
-					else if (tree->left_ == nullptr) {
-						new_tree = tree->right_;
-					}
+					else if (tree->left_ == nullptr) {new_tree = tree->right_;}
+					
 					// case 3 : only left child, repositioning the left child
-					else if (tree->right_ == nullptr) {
-						
-					}
+					else if (tree->right_ == nullptr) { new_tree = tree->left_;}
 					// case 4 : both children, joining their subtrees
-					else {
-						new_tree = join(tree->left_, tree->right_);
-					}
+					else { new_tree = join(tree->left_, tree->right_);}
+
 					tree = new_tree;
 					return tree;
 				}
 			}
 		}
 
-//--------HEIGHT, SIZE, MIN AND MAX, CONTAINS AND LOOKUP----------------
+//--------HEIGHT, SIZE, CONTAINS AND LOOKUP----------------
 
-
-		node* min(node* tree) const {
-			 // go as far left as possible
-			if (tree == nullptr) { return nullptr; }
-			auto current = tree;
-			auto parent = nullptr;
-			while (current->left_ != nullptr) {
-				parent = current;
-				current = current->left_;
-			}
-			return current;
-		}
-		node* max(node* tree) const {
-			// same logic as left, just with the right subtree instead
-			if (tree == nullptr) { return nullptr; }
-			auto current = tree;
-			auto parent = nullptr;
-			while (current->right_ != nullptr) {
-				parent = current;
-				current = current->right_;
-			}
-			return current;
-		}
 		size_t size(node* tree) const {
-			if (tree == nullptr) {
-				return 0;
-			}
-			else {
-				return size_t(1 + size(tree->left_) + size(tree->right_));
-			}
+			if (tree == nullptr) { return 0;}
+			else {return size_t(1 + size(tree->left_) + size(tree->right_));}
 		}
 
 		size_t height(node* tree) const {
-			if (tree == nullptr) {
-				return -1;
-			}
+			if (tree == nullptr) {return -1;}
 			else {
 				int left_height = height(tree->left_);
 				int right_height = height(tree->right_);
+
 				if (left_height > right_height) {					
 					return 1 + left_height;
 				}
@@ -165,9 +149,8 @@ namespace tree {
 		}
 
 		bool contains(const T& data, node* tree) const {
-			if (tree == nullptr) {
-				return false;
-			}
+			if (tree == nullptr) { return false;}
+
 			else {
 				if (data < tree->data_) {
 					return contains(data, tree->left_);
@@ -182,16 +165,17 @@ namespace tree {
 		}
 
 		node* find(const T& data, node* tree) const {
-			if (tree == nullptr) {
-				return nullptr;
-			}
+			if (tree == nullptr) {return nullptr;}
+
 			else {
 				if (data < tree->data_) {
 					return find(data, tree->left_);
 				}
+
 				else if (data > tree->data_) {
-					return find(data, tree->right_	);
+					return find(data, tree->right_);
 				}
+				
 				else {
 					return tree;
 				}
@@ -200,12 +184,7 @@ namespace tree {
 
 
 
-		// BALANCING, ROTATING AND PARTITIONING
-		node* balance(node* tree, int index) {
-			return nullptr;
-		}
-
-		// TRAVERSAL
+//----------------TRAVERSAL-----------------------------------
 		void infix(node* tree) const {
 			if (tree != nullptr) {
 				if (tree->left_ != nullptr) {
@@ -278,7 +257,7 @@ namespace tree {
 			: BinarySearchTree(list.begin(), list.end()) {
 		}
 
-		// COPY AND MOVE CONSTRUCTORS AND OVERLOADS
+		// TODO: COPY AND MOVE CONSTRUCTORS AND OVERLOADS
 		BinarySearchTree(const BinarySearchTree& other)
 			: root_(other.root_) {
 		}
@@ -332,7 +311,16 @@ namespace tree {
 			return find(data, root_);
 		}
 		
-		// TRAVERSAL AND TRAITS
+
+		// MIN AND MAX
+		T min() const {
+			return min(root_)->data_;
+		}
+
+		T max() const {
+			return max(root_)->data_;
+		}
+		// TRAVERSAL
 		void prefix_traversal() const {
 			prefix(root_);
 		}
@@ -347,17 +335,21 @@ namespace tree {
 
 		// TODO ROTATION AND BALANCING
 		void join(BinarySearchTree& other) {
-			// takes two trees and joins them together, requires the max of one tree to be
-			// less than  the min of the other
-			// there are the following cases
-			// 1. tree1 max is less than tree2 min
-			// 2. or tree2 max is less than tree2 min 
-			// 3. or tree1 max = tree2 min
-			// requires tree1 max to be less than tree2 min
-
-			// case 1 and 3 can be merged, just need to avoid the duplicate node
-			// case 2 is separate
-			return;
+			// the tree calling join is tree1, the tree passed into the function is tree 2
+			// interpretable as joining this tree to the other tree
+			try {
+				// ensure that the left tree is less than the right subtree
+				// to maintain ordering
+				if (max() <= other.min()) {
+					root_ = join(root_, other.root_);
+				}
+				else {
+					throw std::runtime_error("cannot join the trees, max value of this tree is not less than min value of other tree");
+				}
+			}
+			catch(const std::exception& e){
+				std::cerr << e.what() << std::endl;
+			}
 		}
 		void rotate_right(BinarySearchTree& tree) {
 			return;
@@ -381,6 +373,7 @@ namespace tree {
 			return os;
 		}
 
+		//TODO: implement
 		bool operator==(const BinarySearchTree& other) const {
 			return false;
 		}

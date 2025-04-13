@@ -26,8 +26,19 @@ TEST_CASE("empty and root tree construction char") {
 
 }
 
+//TODO: copy constructor and operator overload testing
 TEST_CASE("copy constructor and operator overload") {
 
+}
+
+//TODO: ==operator overload
+TEST_CASE("== operator overload") {
+	SECTION("int") {
+	
+	}
+	SECTION("char") {
+	
+	}
 }
 
 TEST_CASE("tree insertion init list int") {
@@ -54,12 +65,14 @@ TEST_CASE("tree insertion init list int") {
 		CHECK(tree_it.height() == nums.size() - 1);
 		CHECK(tree_list.height() == nums.size() - 1);
 	}
+	//TODO insert balancing
 	SECTION("checking balancing and rotation ") {
 
 	}
 }
 
-TEST_CASE("tree insertion init list  char") {
+//TODO insertion list char
+TEST_CASE("tree insertion init list char") {
 	auto tree = tree::BinarySearchTree<int>();
 }
 
@@ -288,6 +301,79 @@ TEST_CASE("does not contain and cannot find int") {
 }
 
 
+//TODO: traversal testing
 TEST_CASE("tree traversal int ") {
 	auto tree = tree::BinarySearchTree<int>({6,2,9, 3, -2, 11, 1, 5, 8, -6, 12});
+}
+
+
+TEST_CASE("tree min and max") {
+	SECTION("int max and min") {
+		auto tree = tree::BinarySearchTree<int>({2,3,-1,5, -3, 6, 8, -5, 10});
+		auto min = tree.min();
+		CHECK(min == -5);
+		auto max = tree.max();
+		CHECK(max == 10);
+	}
+}
+
+
+TEST_CASE("tree joining") {
+	SECTION("case max t1 < min t2, and min t2 is root node") {
+		auto tree1 = tree::BinarySearchTree<int>({2,3,4,1,0});
+		auto tree2 = tree::BinarySearchTree<int>(5);
+		
+		/** tree 1 looks like
+		 *			2
+		 * .	/		\
+		 *		1		3
+		 *	/				\
+		 *	0				4
+		 * 
+		 * tree 2 looks like 
+		 *			5
+		 * 
+		 * after joining it should look like
+		 *					5
+		 *				/		\
+		 *				2
+		 * .		/		\
+		 *			1		3
+		 *		/				\
+		 *		0				4
+		 * 
+		 */
+		auto pre_join_size = tree1.size();
+		
+		tree1.join(tree2);
+
+		// check size increase
+		CHECK(tree1.size() != pre_join_size);
+		CHECK(tree1.size() == 6);
+
+		// check tree 1 contains the new nodes
+		CHECK(tree1.contains(5));
+
+		// check that min tree 2 is the new root of tree 1
+		CHECK(tree1.root()->data_ == 5);
+		CHECK(tree1.root()->left_->data_ == 2);
+		CHECK(tree1.root()->right_ == nullptr);
+
+
+	}
+	//TODO: join test cases
+	SECTION("case max t1 < min t2, and min t2 is not root node") {
+	}
+
+	SECTION("case max t2 < min t1, and min t1 is root node") {
+	}
+	SECTION("case max t2 < min t1, and min t1 is not root node") {
+	}
+
+	SECTION("case max t1 == min t2, and min t2 is root node") {
+	
+	}
+	SECTION("case max t1 == min t2, and min t2 is not root node") {
+	
+	}
 }
