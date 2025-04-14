@@ -33,10 +33,25 @@ TEST_CASE("copy constructor and operator overload") {
 
 //TODO: ==operator overload
 TEST_CASE("== operator overload") {
-	SECTION("int") {
+	SECTION("empty trees ") {
 	
 	}
-	SECTION("char") {
+	SECTION("non empty and empty trees") {
+
+	}
+	SECTION("two roots") {
+	
+	}
+	SECTION("same data, different structure") {
+	
+	}
+	SECTION("same data, same structure") {
+	
+	}
+	SECTION("different data, same structure") {
+	
+	}
+	SECTION("different data, same structure") {
 	
 	}
 }

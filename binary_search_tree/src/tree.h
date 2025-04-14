@@ -21,7 +21,38 @@ namespace tree {
 
 		node* root_;
 
-//------------- MIN AND MAX -------------------------------------------
+
+//----------------EQUALS----------------------------------
+		// checks equal content and structure
+		bool equals(node* tree1, node* tree2) {
+			// cases :
+				// both null - equal
+				// neither null - check data
+				// otherwise in equal 
+
+			// both null - true
+			if (tree1 == nullptr and tree2 == nullptr) {
+				return true;
+			}
+			// neither null - check data
+			else if (tree1 != nullptr and tree2 != nullptr) {
+				// if data is equal continue checking
+				if (tree1->data_ == tree2->data_) {
+					bool left = equals(tree1->left_, tree2->left_);
+					bool right = equals(tree1->right_, tree2->right_);
+					return left and right;
+				}
+				// if data is not equal - false
+				else {
+					return false;
+				}
+			}
+			// one is null but the other is not - false
+			else {
+				return false;
+			}
+		}
+//------------- MIN AND MAX -------------------------------
 		node* min(node* tree) const {
 			// go as far left as possible
 			if (tree == nullptr) { return nullptr; }
@@ -374,8 +405,9 @@ namespace tree {
 		}
 
 		//TODO: implement
-		bool operator==(const BinarySearchTree& other) const {
-			return false;
+		friend bool operator==(const BinarySearchTree& a, const BinarySearchTree& b) {
+			// check the data of the node
+			return equals(a.root, b.root);
 		}
 	};
 }
