@@ -31,16 +31,16 @@ namespace tree {
 				// otherwise in equal 
 
 			// both null - true
-			if (tree1 == nullptr and tree2 == nullptr) {
+			if (tree1 == nullptr && tree2 == nullptr) {
 				return true;
 			}
 			// neither null - check data
-			else if (tree1 != nullptr and tree2 != nullptr) {
+			else if (tree1 != nullptr && tree2 != nullptr) {
 				// if data is equal continue checking
 				if (tree1->data_ == tree2->data_) {
 					bool left = equals(tree1->left_, tree2->left_);
 					bool right = equals(tree1->right_, tree2->right_);
-					return left and right;
+					return left && right;
 				}
 				// if data is not equal - false
 				else {
@@ -405,9 +405,9 @@ namespace tree {
 		}
 
 		//TODO: implement
-		friend bool operator==(const BinarySearchTree& a, const BinarySearchTree& b) {
+		bool operator==(const BinarySearchTree& other) {
 			// check the data of the node
-			return equals(a.root, b.root);
+			return equals(root_, other.root_);
 		}
 	};
 }

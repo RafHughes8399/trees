@@ -34,25 +34,139 @@ TEST_CASE("copy constructor and operator overload") {
 //TODO: ==operator overload
 TEST_CASE("== operator overload") {
 	SECTION("empty trees ") {
-	
+		auto empty_tree = tree::BinarySearchTree<int>();
+		auto empty_tree_2 = tree::BinarySearchTree<int>();
+		bool equal = empty_tree == empty_tree_2;
+		CHECK(equal);
 	}
 	SECTION("non empty and empty trees") {
-
+		auto empty_tree = tree::BinarySearchTree<int>();
+		auto non_empty_tree = tree::BinarySearchTree<int>(1);
+		bool equal = empty_tree == non_empty_tree;
+		CHECK(!equal);
 	}
 	SECTION("two roots") {
-	
+		auto root_1 = tree::BinarySearchTree<int>({ 1 });
+		auto root_2 = tree::BinarySearchTree<int>({ 1 });
+		bool equal = root_1 == root_2;
+		CHECK(equal);
 	}
 	SECTION("same data, different structure") {
-	
+		auto tree_1 = tree::BinarySearchTree<int>({ 2, 1, 3 });
+		auto tree_2 = tree::BinarySearchTree<int>({1, 2, 3});
+		/**
+		 * tree 1 looks like 
+		 * . 2
+		 * /   \
+		 * 1	3
+		 * 
+		 * tree 2 looks like
+		 *   1
+		 *	  \
+		 *	   2
+		 *		\
+		 *		 3
+		 *  same data, but different structure so not equal
+		 */
+		auto equal = tree_1 == tree_2;
+		CHECK(!equal);
 	}
-	SECTION("same data, same structure") {
-	
+	SECTION("same data, same structure,") {
+		// first a simple tree comparison
+		auto tree_1 = tree::BinarySearchTree<int>({ 2, 1, 3 });
+		auto tree_2 = tree::BinarySearchTree<int>({ 2, 1, 3 });
+		auto equal = tree_1 == tree_2;
+		CHECK(equal);
+
+		// then, a more complex tree comparison
+		auto tree_3 = tree::BinarySearchTree<int>({ -3, 4, 1, -4, 2, -1, -6, -5 });
+		auto tree_4 = tree::BinarySearchTree<int>({ -3, 4, 1, -4, 2, -1, -6, -5 });
+
+		/**
+		 * both trees look like
+		 *				-3
+		 *			/		\
+		 *		  -4		 4
+		 *		/		  /
+		 *	  -6		1
+		 *  .	\	  /   \
+		 *		-5	 -1	   2
+		 */
+
+		equal = tree_3 == tree_4;
+		CHECK(equal);
+
+
+		auto tree_5 = tree::BinarySearchTree<int>({ 1, 9, -4, 3, 0, 2, -5 });
+		auto tree_6 = tree::BinarySearchTree<int>({ 1, 9, -4, 3, 0, 2, -5 });
+		equal = tree_5 == tree_6;
+		CHECK(equal);
+
+
+		auto tree_7 = tree::BinarySearchTree<int>({2, 3, -1, 34, -19, 201, 17, -90, 0, -23});
+		/**
+		 * pending copy constructor implementation
+		 * auto tree_8 = tree_7;
+		 * equal = tree_7 == tree_8;
+		 */
 	}
 	SECTION("different data, same structure") {
-	
+		auto tree_1 = tree::BinarySearchTree<int>({ 2, 0, 3 });
+		auto tree_2 = tree::BinarySearchTree<int>({ 2, 1, 3 });
+		auto equal = tree_1 == tree_2;
+		CHECK(!equal);
+
+		// then, a more complex tree comparison
+		auto tree_3 = tree::BinarySearchTree<int>({ -3, 4, 1, -4, 3, -1, -6, -5 });
+		auto tree_4 = tree::BinarySearchTree<int>({ -3, 4, 1, -4, 2, -1, -6, -5 });
+
+		/**
+		 * both trees look like
+		 *				-3
+		 *			/		\
+		 *		  -4		 4
+		 *		/		  /
+		 *	  -6		1
+		 *  .	\	  /   \
+		 *		-5	 -1	   (3 or 2)
+		 */
+
+		equal = tree_3 == tree_4;
+		CHECK(!equal);
 	}
-	SECTION("different data, same structure") {
-	
+	SECTION("different data, different structure") {
+		auto tree_1 = tree::BinarySearchTree<int>({ 3, 2 });
+		auto tree_2 = tree::BinarySearchTree<int>(1);
+
+		auto tree_3 = tree::BinarySearchTree<int>({ -2, 1, 2, 0, -6 });
+		auto tree_4 = tree::BinarySearchTree<int>({ 9, 1, 3, 10, 12 });
+
+		auto tree_5 = tree::BinarySearchTree<int>({1, 9, 10, 3, 12});
+		auto tree_6 = tree::BinarySearchTree<int>(2);
+
+		auto tree_7 = tree::BinarySearchTree<int>({ 2, 3, 4, 9 });
+		auto tree_8 = tree::BinarySearchTree<int>({10, 8, 4, 2, -1, 9});
+
+		auto equal = tree_1 == tree_2;
+		CHECK(!equal);
+
+		equal = tree_2 == tree_3;
+		CHECK(!equal);
+
+		equal = tree_3 == tree_4;
+		CHECK(!equal);
+
+		equal = tree_5 == tree_6;
+		CHECK(!equal);
+		
+		equal = tree_2 == tree_6;
+		CHECK(!equal);
+
+		equal = tree_7 == tree_8;
+		CHECK(!equal);
+
+		equal = tree_4 == tree_8;
+		CHECK(!equal);
 	}
 }
 
