@@ -30,6 +30,9 @@ TEST_CASE("empty and root tree construction char") {
 TEST_CASE("copy constructor and operator overload") {
 
 }
+TEST_CASE("move constructor and overload") {
+
+}
 
 //TODO: ==operator overload
 TEST_CASE("== operator overload") {
@@ -492,11 +495,53 @@ TEST_CASE("tree joining") {
 	}
 	//TODO: join test cases
 	SECTION("case max t1 < min t2, and min t2 is not root node") {
+		// simple trees
+		auto tree_1 = tree::BinarySearchTree<int>({3, 0, 4, 2});
+		auto tree_2 = tree::BinarySearchTree<int>({7, 5, 9});
+		auto size_1 = tree_1.size();
+		auto size_2 = tree_2.size();
+		auto join_size = size_1 + size_2;
+		/** tree 1 looks like
+		 *			3	
+		 *		/		\
+		 *		0		4
+		 * .	 \
+		 *			2 
+		 *  
+		 *  
+		 * tree 2 looks liek
+		 *		7
+		 *	/	 \
+		 * 5	  9
+		 * 
+		 *  after joining
+		 *			5
+		 *		/		\
+		 *		3		 7
+		 *	/		\	 \ 
+		 *	0		4	  9
+		 * .  \
+		 *		2 
+		 *	
+		 */
+
+		tree_1.join(tree_2);
+		CHECK(tree_1.size() == join_size);
+		// more complex trees
+		auto tree_3 = tree::BinarySearchTree<int>();
+		auto tree_4 = tree::BinarySearchTree<int>();
+	
 	}
 
-	SECTION("case max t2 < min t1, and min t1 is root node") {
+	SECTION("case max t1 > min t2, should throw exception") {
+		// throws exception
+		auto tree_1 = tree::BinarySearchTree<int>({ 4,2,1, 6,3 }); // max is 6
+		auto tree_2 = tree::BinarySearchTree<int>({ 5, 9, 10, 7}); // min is 7
+
+		CHECK_THROWS(tree_1.join(tree_2));
 	}
 	SECTION("case max t2 < min t1, and min t1 is not root node") {
+		// throws exception
 	}
 
 	SECTION("case max t1 == min t2, and min t2 is root node") {
