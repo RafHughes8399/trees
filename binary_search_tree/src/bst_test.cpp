@@ -532,22 +532,71 @@ TEST_CASE("tree joining") {
 		auto tree_4 = tree::BinarySearchTree<int>();
 	
 	}
+	SECTION("join t1 is empty, t2 is not empty") {
+		auto tree_1 = tree::BinarySearchTree<int>();
+		auto tree_2 = tree::BinarySearchTree<int>({1, 9, 2, -1, -4, 7});
+		
+		tree_1.join(tree_2);
+		CHECK(tree_1.size() == tree_2.size());
+	}
+	SECTION("join t1 is not empty, t2 is empty") {
+		auto tree_1 = tree::BinarySearchTree<int>({ 1, 9, 2, -1, -4, 7 });
+		auto tree_2 = tree::BinarySearchTree<int>();
 
+		auto pre_size = tree_1.size();
+		tree_1.join(tree_2);
+
+		auto post_size = tree_1.size();
+		CHECK(pre_size == post_size);
+	}
 	SECTION("case max t1 > min t2, should throw exception") {
 		// throws exception
 		auto tree_1 = tree::BinarySearchTree<int>({ 4,2,1, 6,3 }); // max is 6
 		auto tree_2 = tree::BinarySearchTree<int>({ 5, 9, 10, 7}); // min is 7
 
 		CHECK_THROWS(tree_1.join(tree_2));
+		
 	}
-	SECTION("case max t2 < min t1, and min t1 is not root node") {
-		// throws exception
+	SECTION("case max t1 > min t2, and max t1 is not root node") {
+		auto tree_1 = tree::BinarySearchTree<int>({8, 4, -3, 1, 2, 10, 12});
+		auto tree_2 = tree::BinarySearchTree<int>({ -9, -6, -5, -4 });
+		
+		CHECK_THROWS(tree_1.join(tree_2));
 	}
 
 	SECTION("case max t1 == min t2, and min t2 is root node") {
+		// max t1 is 5, so min t2 is 5, handling the case of duplicates
+		auto tree_1 = tree::BinarySearchTree<int>({3,2, 4, 5});
+		auto tree_2 = tree::BinarySearchTree<int>({7, 8, 9, 6, 5, 19});
+		
+		CHECK_THROWS(tree_1.join(tree_2));
+
+		// and the other way around
+
+		CHECK_THROWS(tree_2.join(tree_2));
 	
 	}
-	SECTION("case max t1 == min t2, and min t2 is not root node") {
-	
+	SECTION("case t1 and t2 share nodes") {
+		// throws an exception because the max < min condition is 
+		// no longer satisfied 
+
+
+		// they share one node
+		auto tree_1 = tree::BinarySearchTree<int>({3, 9, 7, 2, -1});
+		auto tree_2 = tree::BinarySearchTree<int>{10, 11, 2, 15, 32};
+
+		CHECK_THROWS(tree_1.join(tree_2));
+		// they share multiple nodes
+		auto tree_3 = tree::BinarySearchTree<int>({2, 9, -1, 0 , 6, 4});
+		auto tree_4 = tree::BinarySearchTree<int>({8, 9, 6, 2, 5, 3, -5});
+		// the two trees are the same
+		CHECK_THROWS(tree_3.join(tree_4));
+		CHECK_THROWS(tree_4.join(tree_3));
+
+		auto tree_5 = tree::BinarySearchTree<int>({1,2,3,4,5,6});
+		auto tree_6 = tree::BinarySearchTree<int>({1,2,3,4,5,6});
+		CHECK_THROWS(tree_5.join(tree_6));
+		CHECK_THROWS(tree_6.join(tree_5));
+
 	}
 }

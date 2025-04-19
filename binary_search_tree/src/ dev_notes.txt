@@ -1,3 +1,13 @@
 
 -> tree construction 
 -> tree insertion
+
+
+
+
+
+-> erase node
+-> clear tree
+-> operator=
+
+-> rotation, balancing

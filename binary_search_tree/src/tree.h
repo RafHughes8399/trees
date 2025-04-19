@@ -3,7 +3,7 @@
 #include <memory>
 #include <algorithm>
 #include <iostream>
-
+#include <stdexcept>
 
 
 // the private methods take a node* tree, the public methods 
@@ -250,7 +250,6 @@ namespace tree {
 				}
 				std::cout << tree->data_ << std::endl;
 			}
-
 		}
 	public:
 		~BinarySearchTree() = default;
@@ -329,6 +328,9 @@ namespace tree {
 		int size() const {
 			return size(root_);
 		}
+		bool is_empty() const {
+			return root_ == nullptr;
+		}
 		int height() const {
 			return height(root_);
 		}
@@ -368,18 +370,25 @@ namespace tree {
 		void join(BinarySearchTree& other) {
 			// the tree calling join is tree1, the tree passed into the function is tree 2
 			// interpretable as joining this tree to the other tree
-			try {
 				// ensure that the left tree is less than the right subtree
 				// to maintain ordering
-				if (max() <= other.min()) {
-					root_ = join(root_, other.root_);
-				}
-				else {
-					throw std::runtime_error("cannot join the trees, max value of this tree is not less than min value of other tree");
-				}
+			if (is_empty()) {
+				root_ = other.root_;
 			}
-			catch(const std::exception& e){
-				std::cerr << e.what() << std::endl;
+			else if (other.is_empty()) {
+				return;
+			}
+			else {
+				if (max() < other.min()) {
+						root_ = join(root_, other.root_);
+					}
+				else if (max() == other.min()) {
+					throw std::runtime_error("cannot join the trees, max value of this tree is the same as the min value of the other tree");
+				}
+				else{
+						throw std::runtime_error("cannot join the trees, max value of this tree is not less than min value of other tree");
+					}
+
 			}
 		}
 		void rotate_right(BinarySearchTree& tree) {
