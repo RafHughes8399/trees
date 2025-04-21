@@ -2,7 +2,7 @@
 #include "../lib/catch2/catch.hpp"
 
 
-// do int, char, and custmon type that can be compared
+// ------------------------------------- CONSTRUCTOR AND INITALISATION TESTS ----------------------------------------
 TEST_CASE("empty and root tree construction and accessors int") {
 	// empty tree
 	auto tree = tree::BinarySearchTree<int>();
@@ -28,13 +28,93 @@ TEST_CASE("empty and root tree construction char") {
 
 //TODO: copy constructor and operator overload testing
 TEST_CASE("copy constructor and operator overload") {
+	
+	// copy constructor 
+	auto tree_1 = tree::BinarySearchTree<int>({ 3, 0, -2, 1, 5, -6 });
+	auto tree_2 = tree_1;
+	auto equal = tree_2 == tree_1;
+	CHECK(equal);
+
+	// operator overload
+	auto tree_3 = tree::BinarySearchTree<int>({8, 0, -2, 4, 5, -6, -1, 2});
+	tree_1 = tree_3;
+	
+	auto equal13 = tree_3 == tree_1;
+	CHECK(equal13);
+	// should no longer hold
+	auto equal12 = tree_2 == tree_1;
+	CHECK(!equal12);
 
 }
 TEST_CASE("move constructor and overload") {
 
+	// move constructor
+	auto tree_nodes = std::vector<int>({ 4, -2, -1, 0, 6, 2, 9 });
+	auto tree_1 = tree::BinarySearchTree<int>(tree_nodes.begin(), tree_nodes.end());
+	auto tree_2 = std::move(tree_1);
+
+	// what are we checking - tree 2 has everything, tree 1 has nothing 
+
+	CHECK(tree_1.is_empty());
+	CHECK(tree_1.root() == nullptr);
+
+	// check tree_2 contains all the original nodes
+	for (auto i = 0; i < tree_nodes.size(); ++i) {
+		CHECK(tree_2.contains(tree_nodes.at(i)));
+	}
+	CHECK(tree_2.size() == tree_nodes.size());
+
+	auto tree_3 = tree::BinarySearchTree<int>({1,2});
+	tree_3 = std::move(tree_2);
+
+	CHECK(tree_2.is_empty());
+
+	for (auto i = 0; i < tree_nodes.size(); ++i) {
+		CHECK(tree_3.contains(tree_nodes.at(i)));
+	}
+	CHECK(tree_3.size() == tree_nodes.size());
+
 }
 
-//TODO: ==operator overload
+TEST_CASE("tree insertion init list int") {
+	SECTION("basic construction") {
+		auto nums = std::vector<int>{ 1, 2, 3, 4, 5, 6, 7, 8 };
+		auto tree_it = tree::BinarySearchTree<int>(nums.begin(), nums.end());
+		// without proper balancing should constantly insert to the right and create a linked list
+		auto tree_list = tree::BinarySearchTree<int>({ 1, 2, 3, 4, 5, 6, 7, 8 });
+
+		CHECK(tree_it.size() == tree_list.size());
+
+		for (auto& n : nums) {
+			CHECK(tree_it.contains(n));
+			CHECK(tree_list.contains(n));
+
+			CHECK(tree_it.find(n) != nullptr);
+			CHECK(tree_list.find(n) != nullptr);
+		}
+
+		// presently (as of 12/04), tree balancing has not been implemented so, the two trees should
+		CHECK(tree_it.size() == 8);
+		CHECK(tree_list.size() == 8);
+
+		CHECK(tree_it.height() == nums.size() - 1);
+		CHECK(tree_list.height() == nums.size() - 1);
+	}
+	SECTION("init list has duplicates") {
+	
+	}
+	//TODO insert balancing
+	SECTION("checking balancing and rotation ") {
+
+	}
+
+}
+
+//TODO insertion list char
+TEST_CASE("tree insertion init list char") {
+	auto tree = tree::BinarySearchTree<int>();
+}
+// -------------------------------- OPERATOR OVERLOADS ------------------------------------------
 TEST_CASE("== operator overload") {
 	SECTION("empty trees ") {
 		auto empty_tree = tree::BinarySearchTree<int>();
@@ -173,41 +253,7 @@ TEST_CASE("== operator overload") {
 	}
 }
 
-TEST_CASE("tree insertion init list int") {
-	SECTION("basic construction") {
-		auto nums = std::vector<int>{ 1, 2, 3, 4, 5, 6, 7, 8};
-		auto tree_it = tree::BinarySearchTree<int>(nums.begin(), nums.end());
-		// without proper balancing should constantly insert to the right and create a linked list
-		auto tree_list = tree::BinarySearchTree<int>({1, 2, 3, 4, 5, 6, 7, 8});
-		
-		CHECK(tree_it.size() == tree_list.size());
-
-		for (auto& n : nums) {
-			CHECK(tree_it.contains(n));
-			CHECK(tree_list.contains(n));
-
-			CHECK(tree_it.find(n) != nullptr);
-			CHECK(tree_list.find(n) != nullptr);
-		}
-
-		// presently (as of 12/04), tree balancing has not been implemented so, the two trees should
-		CHECK(tree_it.size() == 8);
-		CHECK(tree_list.size() == 8);
-
-		CHECK(tree_it.height() == nums.size() - 1);
-		CHECK(tree_list.height() == nums.size() - 1);
-	}
-	//TODO insert balancing
-	SECTION("checking balancing and rotation ") {
-
-	}
-}
-
-//TODO insertion list char
-TEST_CASE("tree insertion init list char") {
-	auto tree = tree::BinarySearchTree<int>();
-}
-
+// --------------------------------- INSERT TESTS -------------------------------------------
 
 TEST_CASE("tree insert int") {
 	auto tree = tree::BinarySearchTree<int>();
@@ -267,7 +313,80 @@ TEST_CASE("insertion order char") {
 
 }
 
+// ----------------------------- ERASE AND CLEAR TESTS -------------------------------------
+TEST_CASE("erase nodes") {
+	SECTION("erase root") {
+		auto tree = tree::BinarySearchTree<int>(4);
+		CHECK(tree.size() == 1);
+		tree.erase(4);
+		CHECK(tree.size() == 0);
+		CHECK(tree.root() == nullptr);
+	}
+	SECTION("erase - node does not exist") {
+		auto tree = tree::BinarySearchTree<int>(6);
+		tree.erase(4);
+		tree.infix_traversal();
 
+
+		tree = tree::BinarySearchTree<int>({ 8,-2,1,-3,4, 5, 9, 13 });
+		tree.infix_traversal();
+		CHECK(tree.size() == 8);
+		tree.erase(10);
+	}
+	SECTION("erase case - no children ") {
+		auto tree = tree::BinarySearchTree<int>({7, 2, 9, 1});
+		CHECK(tree.height() == 2);
+		CHECK(tree.size() == 4);
+		/** tree looks like
+		 * .		7
+		 *		/		\
+		 *		2		9
+		 *	/	 
+		 *  1
+		 */	
+
+		tree.erase(1);
+		/** after erasing 1
+		 * .		7
+		 *		/		\
+		 *		2		9
+		 */
+		CHECK(tree.height() == 1);
+		CHECK(tree.size() == 3);
+		CHECK(!tree.contains(1));
+
+		tree.erase(2);
+		CHECK(tree.height() == 1);
+		CHECK(tree.size() == 2);
+		CHECK(!tree.contains(2));
+
+		tree.erase(9);
+		/** after erasing 2 and 9
+		 * .		7
+		 * 
+		 */
+		CHECK(tree.height() == 0);
+		CHECK(tree.size() == 1);
+		CHECK(!tree.contains(9));
+	}
+	SECTION("erase case - left child") {
+	
+	}
+	SECTION("erase case - right child") {
+	
+	}
+	SECTION("erase case - both children") {
+	
+	}
+	SECTION("multiple erases") {
+	
+	}
+
+	SECTION("erase complex trees") {
+	
+	}
+}
+// -------------------------------- SIZE AND HEIGHT TESTS -----------------------------------
 TEST_CASE("size int ") {
 	auto tree = tree::BinarySearchTree<int>();
 	for (auto i = 0; i < 10; ++i) {
@@ -413,6 +532,7 @@ TEST_CASE("more intricate insertion, checking height and size") {
 
 }
 
+// ------------------------ CONTAINS, FIND AND TREE TRAVERSAL TESTS ----------------------------------
 
 TEST_CASE("contains and find int") {
 	auto tree = tree::BinarySearchTree<int>({-2, 4, 1, 2, 8, 9, 10, 7 , -6});
@@ -439,6 +559,7 @@ TEST_CASE("tree traversal int ") {
 }
 
 
+// -------------------------- MIN, MAX AND JOINING --------------------------------
 TEST_CASE("tree min and max") {
 	SECTION("int max and min") {
 		auto tree = tree::BinarySearchTree<int>({2,3,-1,5, -3, 6, 8, -5, 10});

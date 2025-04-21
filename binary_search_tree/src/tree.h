@@ -131,27 +131,42 @@ namespace tree {
 		node* erase(const T& data, node* tree) {
 			// TODO, cases depend on the number of children of the deleted node
 			if (tree == nullptr) {
+				std::cout << "reached leaf" << std::endl;
 				return nullptr;
 			}
 			else {
 				// traverse the tree to find the node
-				if (data < tree->data_) {tree->left_ = erase(data, tree->left_);}
-				else if (data > tree->data_) {tree->right_ = erase(data, tree->right_);}
-				else {
-					auto new_tree = tree;
-					
+				if (data < tree->data_) {
+					std::cout << data << " is smaller than " << tree->data_ << " exploring left" << std::endl;
+					tree->left_ = erase(data, tree->left_);
+				}
+				else if (data > tree->data_) {
+					std::cout << data << " is greater than " << tree->data_ << " exploring right" << std::endl;
+					tree->right_ = erase(data, tree->right_);
+				}
+				// if found
+				else if(data == tree->data_){
+					std::cout << " found " << data << std::endl;
 					// case 1 : no children, just remove the root / leaf 
-					if (tree->left_ == nullptr and tree->right_ == nullptr) {new_tree = nullptr;}
-					
+					if (tree->left_ == nullptr && tree->right_ == nullptr) {
+						tree = nullptr;
+					}
 					// case 2 : only right child, repositioning the right child
-					else if (tree->left_ == nullptr) {new_tree = tree->right_;}
-					
+					else if (tree->left_ == nullptr) {
+						tree = tree->right_;
+					}
 					// case 3 : only left child, repositioning the left child
-					else if (tree->right_ == nullptr) { new_tree = tree->left_;}
+					else if (tree->right_ == nullptr) {
+						tree = tree->left_;
+					}
 					// case 4 : both children, joining their subtrees
-					else { new_tree = join(tree->left_, tree->right_);}
-
-					tree = new_tree;
+					else {
+						tree = join(tree->left_, tree->right_);
+					}
+					return tree;
+				}
+				// if not found
+				else {
 					return tree;
 				}
 			}
@@ -288,17 +303,22 @@ namespace tree {
 		}
 
 		// TODO: COPY AND MOVE CONSTRUCTORS AND OVERLOADS
+		// I mean theoretically this is all you need right ?
 		BinarySearchTree(const BinarySearchTree& other)
 			: root_(other.root_) {
 		}
-		BinarySearchTree(BinarySearchTree&& other) noexcept {
-			
+
+		// then the move is simple too right ?
+		BinarySearchTree(BinarySearchTree&& other) noexcept
+			: root_(std::exchange(other.root_, nullptr)){
 		}
 
 		BinarySearchTree& operator=(const BinarySearchTree& other) {
+			root_ = other.root_;
 			return *this;
 		}
 		BinarySearchTree& operator=(BinarySearchTree&& other) noexcept {
+			root_ = std::exchange(other.root_, nullptr);
 			return *this;
 		}
 
