@@ -329,7 +329,7 @@ TEST_CASE("erase nodes") {
 
 
 		tree = tree::BinarySearchTree<int>({ 8,-2,1,-3,4, 5, 9, 13 });
-		tree.infix_traversal();
+		//tree.infix_traversal();
 		CHECK(tree.size() == 8);
 		tree.erase(10);
 	}

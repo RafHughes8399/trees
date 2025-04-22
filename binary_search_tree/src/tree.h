@@ -24,7 +24,7 @@ namespace tree {
 
 //----------------EQUALS----------------------------------
 		// checks equal content and structure
-		bool equals(node* tree1, node* tree2) {
+		bool equals(node* tree1, node* tree2) const {
 			// cases :
 				// both null - equal
 				// neither null - check data
@@ -134,42 +134,42 @@ namespace tree {
 				std::cout << "reached leaf" << std::endl;
 				return nullptr;
 			}
-			else {
 				// traverse the tree to find the node
-				if (data < tree->data_) {
-					std::cout << data << " is smaller than " << tree->data_ << " exploring left" << std::endl;
-					tree->left_ = erase(data, tree->left_);
+			if (data < tree->data_) {
+				std::cout << data << " is smaller than " << tree->data_ << " exploring left" << std::endl;
+				tree->left_ = erase(data, tree->left_);
+			}
+			else if (data > tree->data_) {
+				std::cout << data << " is greater than " << tree->data_ << " exploring right" << std::endl;
+				tree->right_ = erase(data, tree->right_);
+			}
+			// if found
+			else{
+				std::cout << " found " << data << std::endl;
+				// case 1 : no children, just remove the root / leaf 
+				if (tree->left_ == nullptr && tree->right_ == nullptr) {
+					delete tree;
+					return nullptr;
 				}
-				else if (data > tree->data_) {
-					std::cout << data << " is greater than " << tree->data_ << " exploring right" << std::endl;
-					tree->right_ = erase(data, tree->right_);
+				// case 2 : only right child, repositioning the right child
+				else if (tree->left_ == nullptr) {
+					node* temp = tree->right_;
+					delete tree;
+					return temp;
 				}
-				// if found
-				else if(data == tree->data_){
-					std::cout << " found " << data << std::endl;
-					// case 1 : no children, just remove the root / leaf 
-					if (tree->left_ == nullptr && tree->right_ == nullptr) {
-						tree = nullptr;
-					}
-					// case 2 : only right child, repositioning the right child
-					else if (tree->left_ == nullptr) {
-						tree = tree->right_;
-					}
-					// case 3 : only left child, repositioning the left child
-					else if (tree->right_ == nullptr) {
-						tree = tree->left_;
-					}
-					// case 4 : both children, joining their subtrees
-					else {
-						tree = join(tree->left_, tree->right_);
-					}
-					return tree;
+				// Case 3: Only left child
+				else if (tree->right_ == nullptr) {
+					node* temp = tree->left_;
+					delete tree;
+					return temp;
 				}
-				// if not found
+				// case 4 : both children, joining their subtrees
 				else {
+					tree = join(tree->left_, tree->right_);
 					return tree;
 				}
 			}
+			return tree;				// if not found
 		}
 
 //--------HEIGHT, SIZE, CONTAINS AND LOOKUP----------------
@@ -432,9 +432,7 @@ namespace tree {
 			os << tree.root_->data_;
 			return os;
 		}
-
-		//TODO: implement
-		bool operator==(const BinarySearchTree& other) {
+		bool operator==(const BinarySearchTree& other) const {
 			// check the data of the node
 			return equals(root_, other.root_);
 		}
