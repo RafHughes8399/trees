@@ -74,7 +74,7 @@ namespace tree {
 
 //-------- JOIN, ROTATE, BALANCE AND PARTITION-----------------------------
 		node* join(node* tree1, node* tree2) {
-			// assumes that max t1 < min t2
+			// assumes that max t1 < min t2, min t2 becomes the new root of the overall tree
 			if (tree1 == nullptr) { return tree2; }
 			else if (tree2 == nullptr) { return tree1; }
 			else {
@@ -131,21 +131,17 @@ namespace tree {
 		node* erase(const T& data, node* tree) {
 			// TODO, cases depend on the number of children of the deleted node
 			if (tree == nullptr) {
-				std::cout << "reached leaf" << std::endl;
 				return nullptr;
 			}
 				// traverse the tree to find the node
 			if (data < tree->data_) {
-				std::cout << data << " is smaller than " << tree->data_ << " exploring left" << std::endl;
 				tree->left_ = erase(data, tree->left_);
 			}
 			else if (data > tree->data_) {
-				std::cout << data << " is greater than " << tree->data_ << " exploring right" << std::endl;
 				tree->right_ = erase(data, tree->right_);
 			}
 			// if found
 			else{
-				std::cout << " found " << data << std::endl;
 				// case 1 : no children, just remove the root / leaf 
 				if (tree->left_ == nullptr && tree->right_ == nullptr) {
 					delete tree;
@@ -165,6 +161,7 @@ namespace tree {
 				}
 				// case 4 : both children, joining their subtrees
 				else {
+					// min right becomes the new root
 					tree = join(tree->left_, tree->right_);
 					return tree;
 				}

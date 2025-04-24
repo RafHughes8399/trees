@@ -14,4 +14,8 @@
 
 
 
+-> erase 
+-> clear 
+-> rotation and balancing
+
 
