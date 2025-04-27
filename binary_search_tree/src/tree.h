@@ -72,7 +72,7 @@ namespace tree {
 			return current;
 		}
 
-//-------- JOIN, ROTATE, BALANCE AND PARTITION-----------------------------
+//---------------------JOIN-----------------------------
 		node* join(node* tree1, node* tree2) {
 			// assumes that max t1 < min t2, min t2 becomes the new root of the overall tree
 			if (tree1 == nullptr) { return tree2; }
@@ -96,11 +96,7 @@ namespace tree {
 				current->left_ = tree1;
 				return current;
 			}
-			
-			
-
-
-			return tree1; // placeholder return;
+			return tree1;
 		}
 
 		node* balance(node* tree, int index) {
@@ -225,9 +221,50 @@ namespace tree {
 			}
 		}
 
+//----------------------------ROTATION, BALANCING AND PARTITION------------------
+		node* rotate_right(node* tree) {
+			if (tree == nullptr || tree->left_ == nullptr) {
+				return tree;
+			}
+			// new root is the left subtree
+			node* new_root = tree->left_;
 
+			// original root left subtree becomes new root's right subtree
+			tree->left_ = new_root->right_;
+			// the original root becomes the left subtree of the new root 
+			new_root->right_ = tree;
+			return new_root;
+		}
 
-//----------------TRAVERSAL-----------------------------------
+		node* rotate_left(node* tree) {
+			// left and right swap from rotate_right
+			if (tree == nullptr || tree->right_ == nullptr) {
+				return tree;
+			}
+			node* new_root = tree->right_;
+			tree->right_ = new_root->left_;
+			new_root->left_ = tree;
+			return new_root;
+		}
+
+		node* partition(node* tree, size_t index) {
+			auto left_size = size(tree->left_);
+
+			// rebalance in favour of the left
+			if (left_size < index) {
+				tree->left_ = parition(tree->left_ index);
+				tree = rotate_right(tree);
+			}
+			// rebalance in favour of the right
+			else if(index > left_size){
+				tree->right_ = partition(tree->right_, index - left_size - 1);
+				tree = rotate_left(tree);
+			}
+		}
+
+//-----------------------------CLEAR-------------------------------------
+
+//---------------------------TRAVERSAL-----------------------------------
 		void infix(node* tree) const {
 			if (tree != nullptr) {
 				if (tree->left_ != nullptr) {
@@ -263,6 +300,7 @@ namespace tree {
 				std::cout << tree->data_ << std::endl;
 			}
 		}
+
 	public:
 		~BinarySearchTree() = default;
 
@@ -408,15 +446,15 @@ namespace tree {
 
 			}
 		}
-		void rotate_right(BinarySearchTree& tree) {
-			return;
+		void rotate_right() {
+			root_ = rotate_right(root_);
 		}
-		void rotate_left(BinarySearchTree& tree) {
-			return;
+		void rotate_left() {
+			root_ = rotate_left(root_);
 		}
 
 		void parition(BinarySearchTree& tree, int index) {
-			return;
+			root_ = partition(root_, index);
 		}
 
 		void balance(int index) {

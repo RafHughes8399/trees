@@ -1023,3 +1023,66 @@ TEST_CASE("tree joining") {
 
 	}
 }
+
+
+// ------------------------- LEFT AND RIGHT ROTATION ------------------------------
+TEST_CASE("rotate left empty tree and only root node") {
+	SECTION("empty") {
+		auto tree = tree::BinarySearchTree<int>();
+		CHECK(tree.root() == nullptr);
+		CHECK(tree.is_empty());
+		tree.rotate_left();
+		CHECK(tree.root() == nullptr);
+		CHECK(tree.is_empty());
+	}
+	SECTION("root") {
+		auto tree = tree::BinarySearchTree<int>({ 1 });
+		CHECK(tree.size() == 1);
+		// rotating without a right child does not change the structure of the tree
+		tree.rotate_left();
+		CHECK(tree.size() == 1);
+		CHECK(tree.contains(1));
+	}
+}
+TEST_CASE("rotate left simple") {
+	SECTION("right child only") {
+		auto tree = tree::BinarySearchTree<int>({1, 2});
+		CHECK(tree.size() == 2);
+		tree.rotate_left();
+		
+		CHECK(tree.contains(1));
+		CHECK(tree.contains(2));
+		CHECK(tree.height() == 1);
+
+		CHECK(tree.root()->data_ == 2);
+	}
+
+	SECTION("right and left child") {
+		auto tree = tree::BinarySearchTree<int>({2,1,3});
+		CHECK(tree.size() == 3);
+		CHECK(tree.height() == 1);
+		/**		tree looks like 
+		 * .		2
+		 *		/		\
+		 *		1		3
+		 */
+		
+		tree.rotate_left();
+		/**		after rotating left should look like 
+		 *				3
+		 *			/
+		 * .	  2
+		 *		/
+		 *	   1
+		 */
+		CHECK(tree.size() == 3);
+		CHECK(tree.height() == 2);
+	}
+	SECTION("simple tree") {
+	
+	}
+}
+
+TEST_CASE("rotate left more complex") {
+
+}
