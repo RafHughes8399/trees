@@ -1111,6 +1111,81 @@ TEST_CASE("rotate left simple") {
 	}
 }
 
-TEST_CASE("rotate left more complex") {
+TEST_CASE("rotate left from linked list ") {
+	auto tree = tree::BinarySearchTree<int>();
+
+	// insert 0 to 9
+	for (auto i = 0; i < 10; ++i) {
+		tree.insert(i);
+	}
+
+	auto size = 10;
+	// balanced tree 
+	CHECK(tree.size() == size);
+	CHECK(tree.height() == size - 1);
+	
+	tree.rotate_left();
+	CHECK(tree.height() == 8);
+	CHECK(tree.root()->data_ == 1);
+	
+	tree.rotate_left();
+	CHECK(tree.height() == 7);
+	CHECK(tree.root()->data_ == 2);
+
+	tree.rotate_left();
+	CHECK(tree.height() == 6);
+	CHECK(tree.root()->data_ == 3);
+
+	tree.rotate_left();
+	CHECK(tree.height() == 5);
+	CHECK(tree.root()->data_ == 4);
+
+	tree.rotate_left();
+	CHECK(tree.height() == 5);
+	CHECK(tree.root()->data_ == 5);
+}
+
+
+
+TEST_CASE("rotate right, empty and root") {
+	SECTION("empty") {
+		auto tree = tree::BinarySearchTree<int>();
+		CHECK(tree.root() == nullptr);
+		CHECK(tree.size() == 0);
+		tree.rotate_right();
+		CHECK(tree.root() == nullptr);
+		CHECK(tree.size() == 0);
+
+	}
+	SECTION("root") {
+
+		// rotating the root 
+		auto tree = tree::BinarySearchTree<int>(2);
+		CHECK(tree.size() == 1);
+		CHECK(tree.root()->data_ == 2);
+
+		tree.rotate_right();
+		CHECK(tree.size() == 1);
+		CHECK(tree.root()->data_ == 2);
+	
+	}
+}
+TEST_CASE("rotate right, simple ") {
+	SECTION("rotate with only right child") {
+	
+	}
+	SECTION("rotate with only left child") {
+	
+	}
+	SECTION("rotate with both children") {
+	
+	}
+}
+
+TEST_CASE("start from linked list") {
+
+}
+
+TEST_CASE("complex rotation") {
 
 }
