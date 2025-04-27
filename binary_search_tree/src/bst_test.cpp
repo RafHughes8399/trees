@@ -1078,8 +1078,36 @@ TEST_CASE("rotate left simple") {
 		CHECK(tree.size() == 3);
 		CHECK(tree.height() == 2);
 	}
-	SECTION("simple tree") {
-	
+	SECTION("simple tree, unbalanced toward the right, ") {
+		auto tree = tree::BinarySearchTree<int>{ 5, 3, 1, 9, 7, 8, 10, 11, 12};
+		/**
+		 * tree looks like 
+		 *				5
+		 *			/		\
+		 *			3		9
+		 *		/		/		\
+		 *		1		7		10
+		 *					\		\
+		 *					8		11
+		 *							 \
+		 *							 12
+		 */
+		CHECK(tree.size() == 9);
+		CHECK(tree.height() == 4);
+
+		tree.rotate_left();
+		/**
+		 * 				9
+		 *			/		\
+		 *			5		10
+		 *		/	  \			\
+		 *		3		7		11
+		 *	/			 \		 \ 
+		 *	1				8	  12	
+		 */
+		CHECK(tree.size() == 9);
+		CHECK(tree.height() == 3);
+
 	}
 }
 
