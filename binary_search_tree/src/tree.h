@@ -10,7 +10,7 @@
 // call the private method and pass in root_
 namespace tree {
 	template <typename T>
-	class BinarySearchTree {
+	class bst {
 		struct node {
 			T data_;
 			node* left_;
@@ -302,16 +302,16 @@ namespace tree {
 		}
 
 	public:
-		~BinarySearchTree() = default;
+		~bst() = default;
 
 		// empty tree construction
 		// tree with root node construction, has data and no children
 
-		BinarySearchTree()
+		bst()
 			: root_{ nullptr } {
 
 		}
-		BinarySearchTree(const T& data) {
+		bst(const T& data) {
 			root_ = new node();
 			root_->data_ = data;
 			root_->left_ = nullptr;
@@ -319,9 +319,9 @@ namespace tree {
 		}
 
 		template<typename InputIt>
-		BinarySearchTree(InputIt first, InputIt last)
+		bst(InputIt first, InputIt last)
 			// start with an empty tree 
-			: BinarySearchTree() {
+			: bst() {
 			auto num = std::distance(first, last);
 			for (auto it = first; it != last; ++it) {
 				insert(*it);
@@ -333,26 +333,26 @@ namespace tree {
 
 			}
 		// INIT LIST CONSTRUCTOR
-		BinarySearchTree(std::initializer_list<T> list)
-			: BinarySearchTree(list.begin(), list.end()) {
+		bst(std::initializer_list<T> list)
+			: bst(list.begin(), list.end()) {
 		}
 
 		// TODO: COPY AND MOVE CONSTRUCTORS AND OVERLOADS
 		// I mean theoretically this is all you need right ?
-		BinarySearchTree(const BinarySearchTree& other)
+		bst(const bst& other)
 			: root_(other.root_) {
 		}
 
 		// then the move is simple too right ?
-		BinarySearchTree(BinarySearchTree&& other) noexcept
+		bst(bst&& other) noexcept
 			: root_(std::exchange(other.root_, nullptr)){
 		}
 
-		BinarySearchTree& operator=(const BinarySearchTree& other) {
+		bst& operator=(const bst& other) {
 			root_ = other.root_;
 			return *this;
 		}
-		BinarySearchTree& operator=(BinarySearchTree&& other) noexcept {
+		bst& operator=(bst&& other) noexcept {
 			root_ = std::exchange(other.root_, nullptr);
 			return *this;
 		}
@@ -422,7 +422,7 @@ namespace tree {
 
 
 		// TODO ROTATION AND BALANCING
-		void join(BinarySearchTree& other) {
+		void join(bst& other) {
 			// the tree calling join is tree1, the tree passed into the function is tree 2
 			// interpretable as joining this tree to the other tree
 				// ensure that the left tree is less than the right subtree
@@ -453,7 +453,7 @@ namespace tree {
 			root_ = rotate_left(root_);
 		}
 
-		void parition(BinarySearchTree& tree, int index) {
+		void parition(bst& tree, int index) {
 			root_ = partition(root_, index);
 		}
 
@@ -463,11 +463,11 @@ namespace tree {
 		
 
 		// OPERATOR OVERLOADS
-		friend std::ostream& operator<<(std::ostream& os, const BinarySearchTree& tree) {
+		friend std::ostream& operator<<(std::ostream& os, const bst& tree) {
 			os << tree.root_->data_;
 			return os;
 		}
-		bool operator==(const BinarySearchTree& other) const {
+		bool operator==(const bst& other) const {
 			// check the data of the node
 			return equals(root_, other.root_);
 		}

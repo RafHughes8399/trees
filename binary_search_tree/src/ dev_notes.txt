@@ -19,3 +19,6 @@
 -> rotation and balancing
 
 
+-> test partition
+-> periodic rebalance 
+-> test memory leaks
