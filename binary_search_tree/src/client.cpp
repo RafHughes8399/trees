@@ -5,7 +5,7 @@
 
 
 int main(){
-	auto another_tree = tree::BinarySearchTree<int>();
+	auto another_tree = tree::bst<int>();
 	another_tree.insert(2);
 	another_tree.insert(1);
 	another_tree.insert(0);
@@ -17,4 +17,10 @@ int main(){
 	another_tree.prefix_traversal();
 
 	another_tree.postfix_traversal();
+	
+
+
+
+	// use this area to tinker with balance interval numbers
+
 }

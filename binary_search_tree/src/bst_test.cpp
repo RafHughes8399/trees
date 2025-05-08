@@ -1241,5 +1241,64 @@ TEST_CASE("complex rotation") {
 	}
 }
 
+TEST_CASE("simple balanceing") {
+	// parition at the midpoint,
+	// need some way to track the nodes, reduce the time cost for size 
+	auto tree = tree::bst<int>({1,0,3,2,4});
 
+	auto size = tree.size();
+	tree.balance(size / 2);
 
+	/*
+				1
+			/		\
+			0		3
+				/		\
+				2		4
+
+	*/
+	// take a step back for a second and think, what does balanceing do 
+	auto balanceed_tree = tree::bst<int>({2, 1, 3, 0, 4});
+	// what should this tree look like, answer that question 
+	/*
+			2
+		/		\
+		1		3
+		|		|
+		0		4
+	*/
+	tree.prefix_traversal();
+	balanceed_tree.prefix_traversal();
+	CHECK(balanceed_tree == tree);
+}
+
+TEST_CASE("balance after init list construction") {
+
+}
+
+TEST_CASE("balance a balanced tree") {
+
+}
+
+TEST_CASE("non size / 2 balance") {
+
+}
+
+TEST_CASE("balance super large mega tree") {
+	SECTION("basically a linked list") {
+	
+	}
+	SECTION("slightly unbalanced") {
+	
+	}
+	SECTION("nearly balanced") {
+	
+	}
+
+}
+TEST_CASE("balance after x inserts ") {
+
+}
+TEST_CASE("insert auto balance") {
+
+};

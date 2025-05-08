@@ -8,6 +8,9 @@
 
 // the private methods take a node* tree, the public methods 
 // call the private method and pass in root_
+
+#define BALANCE_INTERVAL 15
+
 namespace tree {
 	template <typename T>
 	class bst {
@@ -20,7 +23,7 @@ namespace tree {
 	private:
 
 		node* root_;
-
+		short inserts_since_balance_ = 0;
 
 //----------------EQUALS----------------------------------
 		// checks equal content and structure
@@ -99,10 +102,6 @@ namespace tree {
 			return tree1;
 		}
 
-		node* balance(node* tree, int index) {
-			return nullptr;
-		}
-
 //--------INSERT AND ERASE-------------------
 		node* insert(const T& data, node* tree) {
 			if (tree == nullptr) {
@@ -110,6 +109,12 @@ namespace tree {
 				tree->data_ = data;
 				tree->left_ = nullptr;
 				tree->right_ = nullptr;
+				inserts_since_balance_++;
+
+				if (inserts_since_balance_ >= BALANCE_INTERVAL) {
+					tree = balance(tree, size() / 2);
+					inserts_since_balance_ = 0;
+				}
 			}
 			else {
 				if (data < tree->data_) {
@@ -221,7 +226,7 @@ namespace tree {
 			}
 		}
 
-//----------------------------ROTATION, BALANCING AND PARTITION------------------
+//----------------------------ROTATION, BALANCING AND balance------------------
 		node* rotate_right(node* tree) {
 			if (tree == nullptr || tree->left_ == nullptr) {
 				return tree;
@@ -247,19 +252,34 @@ namespace tree {
 			return new_root;
 		}
 
-		node* partition(node* tree, size_t index) {
-			auto left_size = size(tree->left_);
+		// a tree is oncisdered balanced if  the left and right subtrees differ by less than one
+		node* balance(node* tree, size_t index) {
+			auto left_size = int(size(tree->left_));
 
-			// rebalance in favour of the left
-			if (left_size < index) {
-				tree->left_ = parition(tree->left_ index);
+			// repeats until the index and the left subtree are the same height
+			// in the case of size / 2, it evens the tree out  
+
+			// comparably an expensive operation, do not want to do that often, once every x inserts 
+			/*
+				if the mid point of the tree is on the left, it means that the left 
+				is "taller" than the right, so rotate right
+			*/
+			if (index < left_size) {
+				tree->left_ = balance(tree->left_, index);
 				tree = rotate_right(tree);
+				return tree;
 			}
 			// rebalance in favour of the right
+			/*
+				if the mid point is on the right hand side, then rotate left,
+				then index moves one to the lefft 
+			*/
 			else if(index > left_size){
-				tree->right_ = partition(tree->right_, index - left_size - 1);
+				tree->right_ = balance(tree->right_, index - left_size - 1);
 				tree = rotate_left(tree);
+				return tree;
 			}
+			return tree;
 		}
 
 //-----------------------------CLEAR-------------------------------------
@@ -316,6 +336,7 @@ namespace tree {
 			root_->data_ = data;
 			root_->left_ = nullptr;
 			root_->right_ = nullptr;
+
 		}
 
 		template<typename InputIt>
@@ -326,12 +347,8 @@ namespace tree {
 			for (auto it = first; it != last; ++it) {
 				insert(*it);
 			}
-
-			// move through the rest of the list and insert
-			// then balance
 			//balance(num / 2);
-
-			}
+		}
 		// INIT LIST CONSTRUCTOR
 		bst(std::initializer_list<T> list)
 			: bst(list.begin(), list.end()) {
@@ -340,20 +357,22 @@ namespace tree {
 		// TODO: COPY AND MOVE CONSTRUCTORS AND OVERLOADS
 		// I mean theoretically this is all you need right ?
 		bst(const bst& other)
-			: root_(other.root_) {
+			: root_(other.root_), inserts_since_balance_(other.inserts_since_balance_){
 		}
 
 		// then the move is simple too right ?
 		bst(bst&& other) noexcept
-			: root_(std::exchange(other.root_, nullptr)){
+			: root_(std::exchange(other.root_, nullptr)), inserts_since_balance_(std::exchange(inserts_since_balance_, 0)){
 		}
 
 		bst& operator=(const bst& other) {
 			root_ = other.root_;
+			inserts_since_balance_ = other.inserts_since_balance_;
 			return *this;
 		}
 		bst& operator=(bst&& other) noexcept {
 			root_ = std::exchange(other.root_, nullptr);
+			inserts_since_balance_ = std::exchange(other.inserts_since_balance_, 0);
 			return *this;
 		}
 
@@ -453,14 +472,9 @@ namespace tree {
 			root_ = rotate_left(root_);
 		}
 
-		void parition(bst& tree, int index) {
-			root_ = partition(root_, index);
-		}
-
 		void balance(int index) {
 			root_ = balance(root_, index);
-		}
-		
+		}		
 
 		// OPERATOR OVERLOADS
 		friend std::ostream& operator<<(std::ostream& os, const bst& tree) {
