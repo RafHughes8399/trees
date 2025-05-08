@@ -111,10 +111,7 @@ namespace tree {
 				tree->right_ = nullptr;
 				inserts_since_balance_++;
 
-				if (inserts_since_balance_ >= BALANCE_INTERVAL) {
-					tree = balance(tree, size() / 2);
-					inserts_since_balance_ = 0;
-				}
+				inserts_since_balance_++;
 			}
 			else {
 				if (data < tree->data_) {
@@ -380,6 +377,10 @@ namespace tree {
 		// INSERTION AND DELETION
 		void insert(const T& data) {
 			root_ = insert(data, root_);
+			if (inserts_since_balance_ >= BALANCE_INTERVAL) {
+				balance(size() / 2);
+				inserts_since_balance_ = 0;
+			}
 		}
 
 		void erase(const T& data) {

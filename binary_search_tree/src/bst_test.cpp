@@ -1297,7 +1297,20 @@ TEST_CASE("balance super large mega tree") {
 
 }
 TEST_CASE("balance after x inserts ") {
+	auto tree = tree::bst<int>();
+	// creaate aa linked list containing balance_interval - 1 numbers
+	for (auto i = 0; i < BALANCE_INTERVAL - 1; ++i) {
+		tree.insert(i);
+	}
 
+	CHECK(tree.size() == BALANCE_INTERVAL - 1);
+	CHECK(tree.height() == BALANCE_INTERVAL - 2); // double check the numbers
+
+	tree.insert(BALANCE_INTERVAL - 1);
+	// tree should self-balance
+	CHECK(tree.size() == BALANCE_INTERVAL);
+	auto balanced_tree = tree::bst<int>({ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 });
+	CHECK(tree == balanced_tree);
 }
 TEST_CASE("insert auto balance") {
 
