@@ -1,24 +1,5 @@
 
--> tree construction 
--> tree insertion
 
 
-
-
-
--> erase node
--> clear tree
--> operator=
-
--> rotation, balancing
-
-
-
--> erase 
--> clear 
--> rotation and balancing
-
-
--> test partition
--> periodic rebalance 
--> test memory leaks
+-> switch to smart pointers 
+-> benchmark and fill in remaining tests

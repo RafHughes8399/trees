@@ -411,7 +411,7 @@ TEST_CASE("erase left child") {
 
 		tree.erase(4);
 		CHECK(tree.root()->data_ == 6);
-		auto new_left = tree.root()->left_;
+		auto new_left = tree.root()->left_.get();
 		CHECK(new_left->data_ == 2);
 
 		tree.erase(2);
