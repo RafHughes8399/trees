@@ -110,6 +110,9 @@ namespace tree {
 		// that is where most of your memeory management errors would come from, you're making a copy and assigning it
 		// to the original, yet the copy goes out of scope making the original null 
 		// so when you want to modify, use a reference to retain the original 
+
+		// it all goes back to those two key ideas, that's where your memory is being lost
+		// copies that go out of scope
 		void insert(const T& data, std::unique_ptr<node>& tree) {
 			if (tree == nullptr) {
 				inserts_since_balance_++;
