@@ -277,7 +277,18 @@ namespace tree {
 		}
 
 //-----------------------------CLEAR AND COPY-------------------------------------
+		std::unique_ptr<node> copy_subtree(node* tree) {
+			if (tree == nullptr) {
+				return nullptr;
+			}
 
+			auto new_node = std::make_unique<node>();
+			new_node->data_ = tree->data_;
+			new_node->left_ = copy_subtree(tree->left_.get());
+			new_node->right_ = copy_subtree(tree->right_.get());
+
+			return new_node;
+		}
 //---------------------------TRAVERSAL-----------------------------------
 		void infix(node* tree) const {
 			if (tree != nullptr) {
@@ -344,22 +355,15 @@ namespace tree {
 			: bst(list.begin(), list.end()) {
 		}
 
-		// I mean theoretically this is all you need right ?
-		bst(const bst& other) : inserts_since_balance_(other.inserts_since_balance_) {
-			if (other.root_) {
+		bst(const bst& other) 
+			: inserts_since_balance_(other.inserts_since_balance_) {
 				root_ = copy_subtree(other.root_.get());
-			}
 		}
 
 		// Copy assignment operator
 		bst& operator=(const bst& other) {
-			if (this != &other) {  // Self-assignment check
-				root_.reset();  // Clear current tree
-				inserts_since_balance_ = other.inserts_since_balance_;
-				if (other.root_) {
-					root_ = copy_subtree(other.root_.get());
-				}
-			}
+			inserts_since_balance_ = other.inserts_since_balance_;
+			root_ = copy_subtree(other.root_.get());
 			return *this;
 		}
 
