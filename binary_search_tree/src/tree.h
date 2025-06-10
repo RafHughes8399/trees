@@ -35,7 +35,6 @@ namespace tree {
 				// both null - equal
 				// neither null - check data
 				// otherwise in equal 
-
 			// both null - true
 			if (tree1 == nullptr && tree2 == nullptr) {
 				return true;
@@ -48,11 +47,13 @@ namespace tree {
 					bool right = equals(tree1->right_.get(), tree2->right_.get());
 					return left && right;
 				}
+
 				// if data is not equal - false
 				else {
 					return false;
 				}
 			}
+
 			// one is null but the other is not - false
 			else {
 				return false;
@@ -130,44 +131,43 @@ namespace tree {
 		}
 
 		// delete a node with data
-		node* erase(const T& data, node* tree) {
-			// TODO, cases depend on the number of children of the deleted node
+		void erase(const T& data, std::unique_ptr<node>& tree) {
 			if (tree == nullptr) {
 				return nullptr;
 			}
-				// traverse the tree to find the node
+			// traverse the tree to find the node
 			if (data < tree->data_) {
-				tree->left_.reset(erase(data, tree->left_.get()));
+				erase(data, tree->left_);
 			}
 			else if (data > tree->data_) {
-				tree->right_.reset(erase(data, tree->right_.get()));
+				erase(data, tree->right_);
 			}
 			// if found
 			else{
 				// case 1 : no children, just remove the root / leaf 
 				if (tree->left_ == nullptr && tree->right_ == nullptr) {
-					return nullptr;
+					tree.reset(); // delete the pointer
 				}
 				// case 2 : only right child, repositioning the right child
 				else if (tree->left_ == nullptr) {
-					node* temp = tree->right_.get();
-					delete tree;
-					return temp;
+					
+					// replace tree with the right child 
+					tree.reset(tree->right_.release());
+					return;
 				}
 				// Case 3: Only left child
 				else if (tree->right_ == nullptr) {
-					node* temp = tree->left_.get();
-					delete tree;
-					return temp;
+					tree.reset(tree->left_.release());
+					return;
 				}
 				// case 4 : both children, joining their subtrees
 				else {
-					// min right becomes the new root
-					tree = join(tree->left_.get(), tree->right_.get());
-					return tree;
+					// come back to this
+					// tree = join(tree->left_.get(), tree->right_.get());
+					return;
 				}
 			}
-			return tree;				// if not found
+			return;				// if not found
 		}
 
 //--------HEIGHT, SIZE, CONTAINS AND LOOKUP----------------
@@ -227,29 +227,26 @@ namespace tree {
 		}
 
 //----------------------------ROTATION, BALANCING AND balance------------------
-		node* rotate_right(node* tree) {
+		void rotate_right(std::unique_ptr<node>& tree) {
 			if (tree == nullptr || tree->left_ == nullptr) {
-				return tree;
+				return;
 			}
-			// new root is the left subtree
-			node* new_root = tree->left_.get();
-
-			// original root left subtree becomes new root's right subtree
-			tree->left_.reset(new_root->right_.get());
-			// the original root becomes the left subtree of the new root 
-			new_root->right_.reset(tree);
-			return new_root;
+			std::unique_ptr<node> new_root = std::move(tree->left_);
+			tree->left_ = std::move(new_root->right_);
+			new_root->right_ = std::move(tree);
+			tree = std::move(new_root);
 		}
 
-		node* rotate_left(node* tree) {
+		void rotate_left(std::unique_ptr<node>& tree) {
 			// left and right swap from rotate_right
 			if (tree == nullptr || tree->right_ == nullptr) {
-				return tree;
+				return;
 			}
-			node* new_root = tree->right_.get();
-			tree->right_.reset(new_root->left_.get());
-			new_root->left_.reset(tree);
-			return new_root;
+
+			std::unique_ptr<node> new_root = std::move(tree->right_);
+			tree->right_ = std::move(new_root->left_);
+			new_root->left_ = std::move(tree);
+			tree = std::move(new_root);
 		}
 
 		// a tree is oncisdered balanced if  the left and right subtrees differ by less than one
@@ -387,7 +384,7 @@ namespace tree {
 		}
 
 		void erase(const T& data) {
-			root_.reset(erase(data, root_.get()));
+			erase(data, root_);
 		}
 
 		// ACCESSORS
@@ -469,10 +466,10 @@ namespace tree {
 			}
 		}
 		void rotate_right() {
-			root_.reset(rotate_right(root_.get()));
+			rotate_right(root_);
 		}
 		void rotate_left() {
-			root_.reset(rotate_left(root_.get()));
+			rotate_left(root_);
 		}
 
 		void balance(int index) {
