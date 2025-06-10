@@ -12,13 +12,6 @@ int main(){
 	another_tree.insert(3);
 	another_tree.insert(4);
 
-	another_tree.infix_traversal();
-
-	another_tree.prefix_traversal();
-
-	another_tree.postfix_traversal();
-	
-
 
 
 	// use this area to tinker with balance interval numbers

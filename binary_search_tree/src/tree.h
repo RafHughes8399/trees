@@ -18,6 +18,9 @@ namespace tree {
 			T data_;
 			std::unique_ptr<node> left_;
 			std::unique_ptr<node> right_;
+
+			node() : data_(), left_(nullptr), right_(nullptr) {}
+			node(const T& data) : data_(data), left_(nullptr), right_(nullptr) {}
 		};
 
 	private:
@@ -103,24 +106,24 @@ namespace tree {
 		}
 
 //--------INSERT AND ERASE-------------------
-		node* insert(const T& data, node* tree) {
+		// a lesson in scope and copying
+		// that is where most of your memeory management errors would come from, you're making a copy and assigning it
+		// to the original, yet the copy goes out of scope making the original null 
+		// so when you want to modify, use a reference to retain the original 
+		void insert(const T& data, std::unique_ptr<node>& tree) {
 			if (tree == nullptr) {
-				tree = new node();
-				tree->data_ = data;
-				tree->left_ = nullptr;
-				tree->right_ = nullptr;
 				inserts_since_balance_++;
+				tree = std::make_unique<node>(node(data));
+				return;
 			}
 			else {
 				if (data < tree->data_) {
-					tree->left_.reset(insert(data, tree->left_.get()));
+					insert(data, tree->left_);
 				}
 				else if (data > tree->data_) {
-					// go right
-					tree->right_.reset(insert(data, tree->right_.get()));
+					insert(data, tree->right_);
 				}
 			}
-			return tree;
 		}
 
 		// delete a node with data
@@ -337,7 +340,7 @@ namespace tree {
 
 		}
 		bst(const T& data)
-			: root_(std::make_unique<node>(node{ data, nullptr, nullptr })) {
+			: root_(std::make_unique<node>(node(data))) {
 		}
 
 		template<typename InputIt>
@@ -373,11 +376,11 @@ namespace tree {
 
 		// INSERTION AND DELETION
 		void insert(const T& data) {
-			root_.reset(insert(data, root_.get()));
-			if (inserts_since_balance_ >= BALANCE_INTERVAL) {
+			insert(data, root_);
+			/*if (inserts_since_balance_ >= BALANCE_INTERVAL) {
 				balance(size() / 2);
 				inserts_since_balance_ = 0;
-			}
+			}*/
 		}
 
 		void erase(const T& data) {
