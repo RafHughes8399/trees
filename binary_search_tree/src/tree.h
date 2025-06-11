@@ -80,30 +80,36 @@ namespace tree {
 		}
 
 //---------------------JOIN-----------------------------
-		node* join(node* tree1, node* tree2) {
+		void join(std::unique_ptr<node>& tree1, std::unique_ptr<node>& tree2) {
 			// assumes that max t1 < min t2, min t2 becomes the new root of the overall tree
-			if (tree1 == nullptr) { return tree2; }
-			else if (tree2 == nullptr) { return tree1; }
+			if (tree1 == nullptr || tree2 == nullptr) { 
+				return; 
+			}
 			else {
-				node* current = tree2;
+				// find the min node of tree 2
+				node* current = tree2.get();
 				node* parent = nullptr;
-				// find the minimum node in tree 2	
 				while (current->left_ != nullptr) {
 					parent = current;
 					current = current->left_.get();
-
 				}
-				if (parent != nullptr) {
-					// replace min by its right subtree if it exists (to make space for tree1)
-					parent->left_.reset(current->right_.get());
-					// elevate min to the root node of the new tree
-					current->right_.reset(tree2);
+				node* min_node;
+				if (parent == nullptr) {
+					min_node = tree2.release();
+					// tree 2 now contains the right subtree of itself
+					tree2.reset(min_node->right_.release());
 				}
-				// attach tree1 to the left 
-				current->left_.reset(tree1);
-				return current;
+				else {
+					// preserve pointer to main
+					min_node = parent->left_.release();
+					// replace min with its right subtree
+					parent->left_.reset(min_node->right_.release());
+					min_node->right_.reset(tree2.release());
+				}
+				min_node->left_.reset(tree1.release());
+				tree1.reset(min_node);
+				return;
 			}
-			return tree1;
 		}
 
 //--------INSERT AND ERASE-------------------
@@ -163,7 +169,7 @@ namespace tree {
 				// case 4 : both children, joining their subtrees
 				else {
 					// come back to this
-					// tree = join(tree->left_.get(), tree->right_.get());
+					join(tree->left_, tree->right_);
 					return;
 				}
 			}
@@ -447,15 +453,15 @@ namespace tree {
 				// ensure that the left tree is less than the right subtree
 				// to maintain ordering
 			if (is_empty()) {
-				root_.reset(other.root_.get());
+				root_ = std::move(other.root_);
 			}
 			else if (other.is_empty()) {
 				return;
 			}
 			else {
 				if (max() < other.min()) {
-						root_.reset(join(root_.get(), other.root_.get()));
-					}
+					join(root_, other.root_);
+				}
 				else if (max() == other.min()) {
 					throw std::runtime_error("cannot join the trees, max value of this tree is the same as the min value of the other tree");
 				}

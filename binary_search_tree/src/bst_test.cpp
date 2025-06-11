@@ -873,160 +873,161 @@ TEST_CASE("tree min and max") {
 	}
 }
 
+TEST_CASE("tree joining") {
+	SECTION("case max t1 < min t2, and min t2 is root node") {
+		auto tree1 = tree::bst<int>({2,3,4,1,0});
+		auto tree2 = tree::bst<int>(5);
+		
+		/** tree 1 looks like
+		 *			2
+		 * .	/		\
+		 *		1		3
+		 *	/				\
+		 *	0				4
+		 * 
+		 * tree 2 looks like 
+		 *			5
+		 * 
+		 * after joining it should look like
+		 *					5
+		 *				/		\
+		 *				2
+		 * .		/		\
+		 *			1		3
+		 *		/				\
+		 *		0				4
+		 * 
+		 */
+		auto pre_join_size = tree1.size();
+		
+		tree1.join(tree2);
 
-//TEST_CASE("tree joining") {
-//	SECTION("case max t1 < min t2, and min t2 is root node") {
-//		auto tree1 = tree::bst<int>({2,3,4,1,0});
-//		auto tree2 = tree::bst<int>(5);
-//		
-//		/** tree 1 looks like
-//		 *			2
-//		 * .	/		\
-//		 *		1		3
-//		 *	/				\
-//		 *	0				4
-//		 * 
-//		 * tree 2 looks like 
-//		 *			5
-//		 * 
-//		 * after joining it should look like
-//		 *					5
-//		 *				/		\
-//		 *				2
-//		 * .		/		\
-//		 *			1		3
-//		 *		/				\
-//		 *		0				4
-//		 * 
-//		 */
-//		auto pre_join_size = tree1.size();
-//		
-//		tree1.join(tree2);
-//
-//		// check size increase
-//		CHECK(tree1.size() != pre_join_size);
-//		CHECK(tree1.size() == 6);
-//
-//		// check tree 1 contains the new nodes
-//		CHECK(tree1.contains(5));
-//
-//		// check that min tree 2 is the new root of tree 1
-//		CHECK(tree1.root()->data_ == 5);
-//		CHECK(tree1.root()->left_->data_ == 2);
-//		CHECK(tree1.root()->right_ == nullptr);
-//
-//
-//	}
-//	//TODO: join test cases
-//	SECTION("case max t1 < min t2, and min t2 is not root node") {
-//		// simple trees
-//		auto tree_1 = tree::bst<int>({3, 0, 4, 2});
-//		auto tree_2 = tree::bst<int>({7, 5, 9});
-//		auto size_1 = tree_1.size();
-//		auto size_2 = tree_2.size();
-//		auto join_size = size_1 + size_2;
-//		/** tree 1 looks like
-//		 *			3	
-//		 *		/		\
-//		 *		0		4
-//		 * .	 \
-//		 *			2 
-//		 *  
-//		 *  
-//		 * tree 2 looks liek
-//		 *		7
-//		 *	/	 \
-//		 * 5	  9
-//		 * 
-//		 *  after joining
-//		 *			5
-//		 *		/		\
-//		 *		3		 7
-//		 *	/		\	 \ 
-//		 *	0		4	  9
-//		 * .  \
-//		 *		2 
-//		 *	
-//		 */
-//
-//		tree_1.join(tree_2);
-//		CHECK(tree_1.size() == join_size);
-//		// more complex trees
-//		auto tree_3 = tree::bst<int>();
-//		auto tree_4 = tree::bst<int>();
-//	
-//	}
-//	SECTION("join t1 is empty, t2 is not empty") {
-//		auto tree_1 = tree::bst<int>();
-//		auto tree_2 = tree::bst<int>({1, 9, 2, -1, -4, 7});
-//		
-//		tree_1.join(tree_2);
-//		CHECK(tree_1.size() == tree_2.size());
-//	}
-//	SECTION("join t1 is not empty, t2 is empty") {
-//		auto tree_1 = tree::bst<int>({ 1, 9, 2, -1, -4, 7 });
-//		auto tree_2 = tree::bst<int>();
-//
-//		auto pre_size = tree_1.size();
-//		tree_1.join(tree_2);
-//
-//		auto post_size = tree_1.size();
-//		CHECK(pre_size == post_size);
-//	}
-//	SECTION("case max t1 > min t2, should throw exception") {
-//		// throws exception
-//		auto tree_1 = tree::bst<int>({ 4,2,1, 6,3 }); // max is 6
-//		auto tree_2 = tree::bst<int>({ 5, 9, 10, 7}); // min is 7
-//
-//		CHECK_THROWS(tree_1.join(tree_2));
-//		
-//	}
-//	SECTION("case max t1 > min t2, and max t1 is not root node") {
-//		auto tree_1 = tree::bst<int>({8, 4, -3, 1, 2, 10, 12});
-//		auto tree_2 = tree::bst<int>({ -9, -6, -5, -4 });
-//		
-//		CHECK_THROWS(tree_1.join(tree_2));
-//	}
-//
-//	SECTION("case max t1 == min t2, and min t2 is root node") {
-//		// max t1 is 5, so min t2 is 5, handling the case of duplicates
-//		auto tree_1 = tree::bst<int>({3,2, 4, 5});
-//		auto tree_2 = tree::bst<int>({7, 8, 9, 6, 5, 19});
-//		
-//		CHECK_THROWS(tree_1.join(tree_2));
-//
-//		// and the other way around
-//
-//		CHECK_THROWS(tree_2.join(tree_2));
-//	
-//	}
-//	SECTION("case t1 and t2 share nodes") {
-//		// throws an exception because the max < min condition is 
-//		// no longer satisfied 
-//
-//
-//		// they share one node
-//		auto tree_1 = tree::bst<int>({3, 9, 7, 2, -1});
-//		auto tree_2 = tree::bst<int>{10, 11, 2, 15, 32};
-//
-//		CHECK_THROWS(tree_1.join(tree_2));
-//		// they share multiple nodes
-//		auto tree_3 = tree::bst<int>({2, 9, -1, 0 , 6, 4});
-//		auto tree_4 = tree::bst<int>({8, 9, 6, 2, 5, 3, -5});
-//		// the two trees are the same
-//		CHECK_THROWS(tree_3.join(tree_4));
-//		CHECK_THROWS(tree_4.join(tree_3));
-//
-//		auto tree_5 = tree::bst<int>({1,2,3,4,5,6});
-//		auto tree_6 = tree::bst<int>({1,2,3,4,5,6});
-//		CHECK_THROWS(tree_5.join(tree_6));
-//		CHECK_THROWS(tree_6.join(tree_5));
-//
-//	}
-//}
-//
-//
-//// ------------------------- LEFT AND RIGHT ROTATION ------------------------------
+		// check size increase
+		CHECK(tree1.size() != pre_join_size);
+		CHECK(tree1.size() == 6);
+
+		// check tree 1 contains the new nodes
+		CHECK(tree1.contains(5));
+
+		// check that min tree 2 is the new root of tree 1
+		CHECK(tree1.root()->data_ == 5);
+		CHECK(tree1.root()->left_->data_ == 2);
+		CHECK(tree1.root()->right_ == nullptr);
+
+
+	}
+	//TODO: join test cases
+	SECTION("case max t1 < min t2, and min t2 is not root node") {
+		// simple trees
+		auto tree_1 = tree::bst<int>({3, 0, 4, 2});
+		auto tree_2 = tree::bst<int>({7, 5, 9});
+		auto size_1 = tree_1.size();
+		auto size_2 = tree_2.size();
+		auto join_size = size_1 + size_2;
+		/** tree 1 looks like
+		 *			3	
+		 *		/		\
+		 *		0		4
+		 * .	 \
+		 *			2 
+		 *  
+		 *  
+		 * tree 2 looks liek
+		 *		7
+		 *	/	 \
+		 * 5	  9
+		 * 
+		 *  after joining
+		 *			5
+		 *		/		\
+		 *		3		 7
+		 *	/		\	 \ 
+		 *	0		4	  9
+		 * .  \
+		 *		2 
+		 *	
+		 */
+
+		tree_1.join(tree_2);
+		CHECK(tree_1.size() == join_size);
+		// more complex trees
+		auto tree_3 = tree::bst<int>();
+		auto tree_4 = tree::bst<int>();
+	
+	}
+	SECTION("join t1 is empty, t2 is not empty") {
+		auto tree_1 = tree::bst<int>();
+		auto tree_2 = tree::bst<int>({1, 9, 2, -1, -4, 7});
+		
+		auto size = tree_2.size();
+
+		tree_1.join(tree_2);
+		CHECK(tree_1.size() == size);
+	}
+	SECTION("join t1 is not empty, t2 is empty") {
+		auto tree_1 = tree::bst<int>({ 1, 9, 2, -1, -4, 7 });
+		auto tree_2 = tree::bst<int>();
+
+		auto pre_size = tree_1.size();
+		tree_1.join(tree_2);
+
+		auto post_size = tree_1.size();
+		CHECK(pre_size == post_size);
+	}
+	SECTION("case max t1 > min t2, should throw exception") {
+		// throws exception
+		auto tree_1 = tree::bst<int>({ 4,2,1, 6,3 }); // max is 6
+		auto tree_2 = tree::bst<int>({ 5, 9, 10, 7}); // min is 7
+
+		CHECK_THROWS(tree_1.join(tree_2));
+		
+	}
+	SECTION("case max t1 > min t2, and max t1 is not root node") {
+		auto tree_1 = tree::bst<int>({8, 4, -3, 1, 2, 10, 12});
+		auto tree_2 = tree::bst<int>({ -9, -6, -5, -4 });
+		
+		CHECK_THROWS(tree_1.join(tree_2));
+	}
+
+	SECTION("case max t1 == min t2, and min t2 is root node") {
+		// max t1 is 5, so min t2 is 5, handling the case of duplicates
+		auto tree_1 = tree::bst<int>({3,2, 4, 5});
+		auto tree_2 = tree::bst<int>({7, 8, 9, 6, 5, 19});
+		
+		CHECK_THROWS(tree_1.join(tree_2));
+
+		// and the other way around
+
+		CHECK_THROWS(tree_2.join(tree_2));
+	
+	}
+	SECTION("case t1 and t2 share nodes") {
+		// throws an exception because the max < min condition is 
+		// no longer satisfied 
+
+
+		// they share one node
+		auto tree_1 = tree::bst<int>({3, 9, 7, 2, -1});
+		auto tree_2 = tree::bst<int>{10, 11, 2, 15, 32};
+
+		CHECK_THROWS(tree_1.join(tree_2));
+		// they share multiple nodes
+		auto tree_3 = tree::bst<int>({2, 9, -1, 0 , 6, 4});
+		auto tree_4 = tree::bst<int>({8, 9, 6, 2, 5, 3, -5});
+		// the two trees are the same
+		CHECK_THROWS(tree_3.join(tree_4));
+		CHECK_THROWS(tree_4.join(tree_3));
+
+		auto tree_5 = tree::bst<int>({1,2,3,4,5,6});
+		auto tree_6 = tree::bst<int>({1,2,3,4,5,6});
+		CHECK_THROWS(tree_5.join(tree_6));
+		CHECK_THROWS(tree_6.join(tree_5));
+
+	}
+}
+
+
+// ------------------------- LEFT AND RIGHT ROTATION ------------------------------
 TEST_CASE("rotate left empty tree and only root node") {
 	SECTION("empty") {
 		auto tree = tree::bst<int>();
@@ -1316,3 +1317,7 @@ TEST_CASE("start from linked list") {
 //TEST_CASE("insert auto balance") {
 //
 //};
+
+TEST_CASE("simulating natural use") {
+
+}
