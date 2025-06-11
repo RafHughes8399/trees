@@ -93,21 +93,27 @@ namespace tree {
 					parent = current;
 					current = current->left_.get();
 				}
-				node* min_node;
-				if (parent == nullptr) {
-					min_node = tree2.release();
-					// tree 2 now contains the right subtree of itself
-					tree2.reset(min_node->right_.release());
-				}
-				else {
+				// ahh ok ok ok ok ok, this is def causing issues
+				//what is the logic again
+				// if parent is not null 
+				// parent left bcomes current right
+				// current right becomes tree 2
+				if(parent != nullptr) {
 					// preserve pointer to main
-					min_node = parent->left_.release();
 					// replace min with its right subtree
-					parent->left_.reset(min_node->right_.release());
-					min_node->right_.reset(tree2.release());
+					parent->left_ = std::move(current->right_);
 				}
-				min_node->left_.reset(tree1.release());
-				tree1.reset(min_node);
+
+				else {
+					auto min = std::move(tree2);
+ 					min->left_ = std::move(tree1);
+					tree1 = std::move(min);
+					return;
+				}
+
+				current->left_.reset(tree1.release());
+				current->right_.reset(tree2.release());
+				tree1.reset(current);
 				return;
 			}
 		}
@@ -139,7 +145,7 @@ namespace tree {
 		// delete a node with data
 		void erase(const T& data, std::unique_ptr<node>& tree) {
 			if (tree == nullptr) {
-				return nullptr;
+				return;
 			}
 			// traverse the tree to find the node
 			if (data < tree->data_) {
@@ -158,18 +164,24 @@ namespace tree {
 				else if (tree->left_ == nullptr) {
 					
 					// replace tree with the right child 
-					tree.reset(tree->right_.release());
+					tree = std::move(tree->right_);
 					return;
 				}
 				// Case 3: Only left child
 				else if (tree->right_ == nullptr) {
-					tree.reset(tree->left_.release());
+					tree = std::move(tree->left_);
 					return;
 				}
 				// case 4 : both children, joining their subtrees
 				else {
 					// come back to this
-					join(tree->left_, tree->right_);
+					
+
+					auto left = std::move(tree->left_);
+					auto right = std::move(tree->right_);
+
+					join(left, right);
+					tree = std::move(left);
 					return;
 				}
 			}

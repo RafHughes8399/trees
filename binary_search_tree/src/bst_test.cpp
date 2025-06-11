@@ -314,381 +314,382 @@ TEST_CASE("insertion order char") {
 
 }
 
-//// ----------------------------- ERASE AND CLEAR TESTS -------------------------------------
-//TEST_CASE("erase nodes") {
-//	SECTION("erase root") {
-//		auto tree = tree::bst<int>(4);
-//		CHECK(tree.size() == 1);
-//		tree.erase(4);
-//		CHECK(tree.size() == 0);
-//		CHECK(tree.root() == nullptr);
-//	}
-//	SECTION("erase case - no children ") {
-//		auto tree = tree::bst<int>({ 7, 2, 9, 1 });
-//		CHECK(tree.height() == 2);
-//		CHECK(tree.size() == 4);
-//		/** tree looks like
-//		 * .		7
-//		 *		/		\
-//		 *		2		9
-//		 *	/
-//		 *  1
-//		 */
-//
-//		tree.erase(1);
-//		/** after erasing 1
-//		 * .		7
-//		 *		/		\
-//		 *		2		9
-//		 */
-//		CHECK(tree.height() == 1);
-//		CHECK(tree.size() == 3);
-//		CHECK(!tree.contains(1));
-//
-//		tree.erase(2);
-//		CHECK(tree.height() == 1);
-//		CHECK(tree.size() == 2);
-//		CHECK(!tree.contains(2));
-//
-//		tree.erase(9);
-//		/** after erasing 2 and 9
-//		 * .		7
-//		 *
-//		 */
-//		CHECK(tree.height() == 0);
-//		CHECK(tree.size() == 1);
-//		CHECK(!tree.contains(9));
-//	}
-//}
-//TEST_CASE("erase - node does not exist") {
-//	auto tree = tree::bst<int>(6);
-//	tree.erase(4);
-//
-//
-//	tree = tree::bst<int>({ 8,-2,1,-3,4, 5, 9, 13 });
-//	//tree.infix_traversal();
-//	CHECK(tree.size() == 8);
-//	tree.erase(10);
-//	CHECK(tree.size() == 8);
-//}
-//TEST_CASE("erase left child") {
-//	SECTION("simple") {
-//		auto tree = tree::bst<int>({ 4, 2 });
-//		/** a simple tree looks like
-//		 * .			4
-//		 *			/	  \
-//		 *			2
-//		 *
-//		 * tree height will change
-//		 */
-//		CHECK(tree.size() == 2);
-//		CHECK(tree.height() == 1);
-//
-//		tree.erase(4);
-//
-//		CHECK(tree.size() == 1);
-//		CHECK(tree.height() == 0);
-//		CHECK(tree.contains(4) == false);
-//
-//		// two should be the root 
-//		CHECK(tree.root()->data_ == 2);
-//
-//	}
-//	SECTION("more compelx"){
-//		auto tree = tree::bst<int>({ 6, 4, 2, 1 });
-//		/** a slightly more complex tree looks like
-//		 *					6
-//		 * .			/
-//		 *				4
-//		 *			  /
-//		 *			2
-//		 *		  /
-//		 *		1
-//		 *
-//		 *
-//		 */
-//		CHECK(tree.size() == 4);
-//		CHECK(tree.height() == 3);
-//
-//		tree.erase(4);
-//		CHECK(tree.root()->data_ == 6);
-//		auto new_left = tree.root()->left_.get();
-//		CHECK(new_left->data_ == 2);
-//
-//		tree.erase(2);
-//		tree.erase(6);
-//		CHECK(tree.size() == 1);
-//		CHECK(tree.height() == 0);
-//		CHECK(tree.root()->data_ == 1);
-//
-//
-//
-//		tree = tree::bst<int>({ 8, -1, 2, 10, 4, 3, -3, 0 });
-//		/** a more complex tree looks like
-//		 * .			8
-//		 *			/		\
-//		 *		  -1		10
-//		 *		/	\
-//		 *	  -3	2
-//		 *		  /	  \
-//		 *		0		4
-//		 *			  /
-//		 *			  3
-//		 * tree height wont change
-//		 */
-//
-//		 // erase with left child
-//		tree.erase(4);
-//		// erase with no children
-//		tree.erase(3);
-//		// erase with left child
-//		tree.erase(2);
-//		// erase with no children
-//		// erase with left child
-//		tree.erase(0);
-//		tree.erase(-1);
-//
-//		CHECK(tree.root()->left_->data_ == -3);
-//		CHECK(tree.height() == 1);
-//		CHECK(tree.size() == 3);
-//	}
-//}
-//TEST_CASE("erase right child") {
-//	SECTION("simple") {
-//		auto tree = tree::bst<int>({7, 9});
-//		CHECK(tree.size() == 2);
-//		CHECK(tree.height() == 1);
-//
-//		tree.erase(7);
-//		
-//		CHECK(tree.size() == 1);
-//		CHECK(tree.height() == 0);
-//
-//		CHECK(tree.root()->data_ == 9);
-//	}
-//	SECTION("more complex") {
-//		auto tree = tree::bst<int>({8, 3, 1, -2, 0, 9, 12, 10 });
-//		/** tree looks like
-//		 *					  8
-//		 *				/			\
-//		 *			  3				  9
-//		 *			/					\
-//		 *		.1						10
-//		 *		/							\	
-//		 *	-2								12
-//		 *	  \ 
-//		 *		0
-//		 */
-//
-//		CHECK(tree.size() == 8);
-//		CHECK(tree.height() == 4);
-//
-//		tree.erase(-2);
-//		tree.erase(9);		
-//		CHECK(tree.size() == 6);
-//		CHECK(tree.height() == 3);
-//
-//		tree.erase(10);
-//		CHECK(tree.size() == 5);
-//
-//		CHECK(tree.root()->right_->data_ == 12);
-//		tree.erase(12);
-//		CHECK(tree.root()->right_ == nullptr);
-//
-//
-//		tree = tree::bst<int>({ 5, 8, 10});
-//		/** tree looks like
-//		 * .			5
-//		 *					\
-//		 *					8
-//		 *					 \
-//		 *					10
-//		 */
-//		tree.erase(5);
-//		CHECK(tree.root()->data_ == 8);
-//		CHECK(tree.height() == 1);
-//		tree.erase(8);
-//		CHECK(tree.root()->data_ == 10);
-//		CHECK(tree.height() == 0);
-//		tree.erase(10);
-//		CHECK(tree.is_empty());
-//	}
-//}
-//TEST_CASE("erase case - both children") {
-//	SECTION("simple, root node"){
-//		auto tree = tree::bst<int>({2,1,3});
-//
-//		tree.erase(2);
-//		CHECK(tree.size() == 2);
-//		CHECK(tree.height() == 1);
-//		
-//		// 3 should be the root 
-//		CHECK(tree.root()->data_ == 3);
-//	}
-//
-//	SECTION("simple, not root") {
-//		auto tree = tree::bst<int>({5, 3, 7, 2, 1, 6, 8});
-//		/** tree looks like
-//		 * .			5
-//		 *			/		\
-//		 *			3		7
-//		 *		/	 \	  /	  \
-//		 *		1	 2   6    8
-//		 */
-//
-//		CHECK(tree.size() == 7);
-//
-//		tree.erase(3);
-//		tree.erase(7);
-//
-//		/** after erasing, tree looks like 
-//		 * .			5
-//		 *			/		\
-//		 *			2		8
-//		 *		/	 \	  /	  \
-//		 *		1	     6    .
-//		 */
-//
-//		CHECK(tree.size() == 5);
-//		CHECK(tree.height() == 2);
-//
-//		tree.erase(5);
-//
-//		/** tree now looks like 
-//		 * .		
-//		 *		  6
-//		 *		/	\
-//		 *		2	8
-//		 *	  /
-//		 *	1
-//		 */
-//
-//		CHECK(tree.height() == 2);
-//		CHECK(tree.size() == 4);
-//
-//		// checking the structure of the tree 
-//		CHECK(tree.root()->data_ == 6);
-//		CHECK(tree.left()->data_ == 2);
-//		CHECK(tree.right()->data_ == 8);
-//	}
-//
-//	SECTION("complex tree") {
-//		auto tree = tree::bst<int>({8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7});
-//		CHECK(tree.size() == 14);
-//		CHECK(tree.height() == 4);
-//		/**	tree looks like 
-//		 * .							8
-//		 *					/					\
-//		 *					2					10
-//		 *			/			\			/		\
-//		 *			-2			6		   9		12
-//		 *		/		\	  /	  \		/	\	  /		
-//		 *		-4		-1	  4	  7			     11
-//		 *		  		 \	 /
-//		 *				  1  3
-//		 * 
-//		 * 
-//		 */
-//
-//		tree.erase(-2);
-//		CHECK(tree.size() == 13);
-//		CHECK(tree.height() == 4);
-//		/**	tree looks like
-//		 * .							8
-//		 *					/					\
-//		 *					2					10
-//		 *			/			\			/		\
-//		 *			-1			6		   9		12
-//		 *		/		\	  /	  \		/	\	  /
-//		 *		-4		1	  4	  7			     11
-//		 *		  		 	 /
-//		 *				    3
-//		 *
-//		 *
-//		 */
-//
-//		tree.erase(6);
-//		CHECK(tree.size() == 12);
-//		CHECK(tree.height() == 4);
-//
-//		tree.erase(9);
-//		CHECK(tree.size() == 11);
-//		/**
-//		 * tree looks like 
-//		 * .							8
-//		 *					/					\
-//		 *					2					10
-//		 *			/			\			/		\
-//		 *			-1			7					12
-//		 *		/		\	  /	 				  /
-//		 *		-4		1	  4	  			     11
-//		 *		  		 	 /
-//		 *				    3
-//		 */
-//			
-//		tree.erase(2);
-//		CHECK(tree.size() == 10);
-//		CHECK(tree.height() == 3);
-//		/**
-//		 * tree looks like
-//		 * .							8
-//		 *					/					\
-//		 *					3					10
-//		 *			/			\			/		\
-//		 *			-1			7					12
-//		 *		/		\	  /	 				  /
-//		 *		-4		1	  4	  			     11
-//		 */
-//		tree.erase(-1);
-//		tree.erase(10);
-//		tree.erase(7);
-//
-//		/**
-//		 * tree now looks like
-//		 * .							8
-//		 *					/					\
-//		 *					3					12
-//		 *			/			\					\
-//		 *			1			4					11
-//		 *		/			  				  
-//		 *		-4			  	  			     
-//		 */
-//		CHECK(tree.size() == 7);
-//		CHECK(tree.height() ==  3);
-//
-//		tree.erase(8);
-//		tree.erase(3);
-//		tree.erase(1);
-//		/**
-//		 * tree now looks like
-//		 * .							11
-//		 *					/					\
-//		 *					4					12
-//		 *			/						
-//		 *			-4								
-//		 *		
-//		 */
-//		CHECK(tree.size() == 4);
-//		CHECK(tree.height() == 2);
-//
-//		tree.erase(-4);
-//		tree.erase(11);
-//		/**
-//		 * tree now looks like
-//		 * .				12
-//		 *					/			
-//		 *					4					
-//		 *
-//		 */
-//		CHECK(tree.size() == 2);
-//		CHECK(tree.height() == 1);
-//		tree.erase(12);
-//		tree.erase(4);
-//
-//		CHECK(tree.is_empty());
-//	}
-//}
-//
+// ----------------------------- ERASE AND CLEAR TESTS -------------------------------------
+TEST_CASE("erase nodes") {
+	SECTION("erase root") {
+		auto tree = tree::bst<int>(4);
+		CHECK(tree.size() == 1);
+		tree.erase(4);
+		CHECK(tree.size() == 0);
+		CHECK(tree.root() == nullptr);
+	}
+	SECTION("erase case - no children ") {
+		auto tree = tree::bst<int>({ 7, 2, 9, 1 });
+		CHECK(tree.height() == 2);
+		CHECK(tree.size() == 4);
+		/** tree looks like
+		 * .		7
+		 *		/		\
+		 *		2		9
+		 *	/
+		 *  1
+		 */
+
+		tree.erase(1);
+		/** after erasing 1
+		 * .		7
+		 *		/		\
+		 *		2		9
+		 */
+		CHECK(tree.height() == 1);
+		CHECK(tree.size() == 3);
+		CHECK(!tree.contains(1));
+
+		tree.erase(2);
+		CHECK(tree.height() == 1);
+		CHECK(tree.size() == 2);
+		CHECK(!tree.contains(2));
+
+		tree.erase(9);
+		/** after erasing 2 and 9
+		 * .		7
+		 *
+		 */
+		CHECK(tree.height() == 0);
+		CHECK(tree.size() == 1);
+		CHECK(!tree.contains(9));
+	}
+}
+TEST_CASE("erase - node does not exist") {
+	auto tree = tree::bst<int>(6);
+	tree.erase(4);
+
+
+	tree = tree::bst<int>({ 8,-2,1,-3,4, 5, 9, 13 });
+	//tree.infix_traversal();
+	CHECK(tree.size() == 8);
+	tree.erase(10);
+	CHECK(tree.size() == 8);
+}
+TEST_CASE("erase left child") {
+	SECTION("simple") {
+		auto tree = tree::bst<int>({ 4, 2 });
+		/** a simple tree looks like
+		 * .			4
+		 *			/	  \
+		 *			2
+		 *
+		 * tree height will change
+		 */
+		CHECK(tree.size() == 2);
+		CHECK(tree.height() == 1);
+
+		tree.erase(4);
+
+		CHECK(tree.size() == 1);
+		CHECK(tree.height() == 0);
+		CHECK(tree.contains(4) == false);
+
+		// two should be the root 
+		CHECK(tree.root()->data_ == 2);
+
+	}
+	SECTION("more compelx"){
+		auto tree = tree::bst<int>({ 6, 4, 2, 1 });
+		/** a slightly more complex tree looks like
+		 *					6
+		 * .			/
+		 *				4
+		 *			  /
+		 *			2
+		 *		  /
+		 *		1
+		 *
+		 *
+		 */
+		CHECK(tree.size() == 4);
+		CHECK(tree.height() == 3);
+
+		tree.erase(4);
+		CHECK(tree.root()->data_ == 6);
+		auto new_left = tree.root()->left_.get();
+		CHECK(new_left->data_ == 2);
+
+		tree.erase(2);
+		tree.erase(6);
+		CHECK(tree.size() == 1);
+		CHECK(tree.height() == 0);
+		CHECK(tree.root()->data_ == 1);
+
+
+
+		tree = tree::bst<int>({ 8, -1, 2, 10, 4, 3, -3, 0 });
+		/** a more complex tree looks like
+		 * .			8
+		 *			/		\
+		 *		  -1		10
+		 *		/	\
+		 *	  -3	2
+		 *		  /	  \
+		 *		0		4
+		 *			  /
+		 *			  3
+		 * tree height wont change
+		 */
+
+		 // erase with left child
+		tree.erase(4);
+		// erase with no children
+		tree.erase(3);
+		// erase with left child
+		tree.erase(2);
+		// erase with no children
+		// erase with left child
+		tree.erase(0);
+		tree.erase(-1);
+
+		CHECK(tree.root()->left_->data_ == -3);
+		CHECK(tree.height() == 1);
+		CHECK(tree.size() == 3);
+	}
+}
+TEST_CASE("erase right child") {
+	SECTION("simple") {
+		auto tree = tree::bst<int>({7, 9});
+		CHECK(tree.size() == 2);
+		CHECK(tree.height() == 1);
+
+		tree.erase(7);
+		
+		CHECK(tree.size() == 1);
+		CHECK(tree.height() == 0);
+
+		CHECK(tree.root()->data_ == 9);
+	}
+	SECTION("more complex") {
+		auto tree = tree::bst<int>({8, 3, 1, -2, 0, 9, 12, 10 });
+		/** tree looks like
+		 *					  8
+		 *				/			\
+		 *			  3				  9
+		 *			/					\
+		 *		.1						10
+		 *		/							\	
+		 *	-2								12
+		 *	  \ 
+		 *		0
+		 */
+
+		CHECK(tree.size() == 8);
+		CHECK(tree.height() == 4);
+
+		tree.erase(-2);
+		tree.erase(9);		
+		CHECK(tree.size() == 6);
+		CHECK(tree.height() == 3);
+
+		tree.erase(10);
+		CHECK(tree.size() == 5);
+
+		CHECK(tree.root()->right_->data_ == 12);
+		tree.erase(12);
+		CHECK(tree.root()->right_ == nullptr);
+
+
+		tree = tree::bst<int>({ 5, 8, 10});
+		/** tree looks like
+		 * .			5
+		 *					\
+		 *					8
+		 *					 \
+		 *					10
+		 */
+		tree.erase(5);
+		CHECK(tree.root()->data_ == 8);
+		CHECK(tree.height() == 1);
+		tree.erase(8);
+		CHECK(tree.root()->data_ == 10);
+		CHECK(tree.height() == 0);
+		tree.erase(10);
+		CHECK(tree.is_empty());
+	}
+}
+TEST_CASE("erase case - both children") {
+	SECTION("simple, root node"){
+		auto tree = tree::bst<int>({2,1,3});
+
+		tree.erase(2);
+		CHECK(tree.size() == 2);
+		CHECK(tree.height() == 1);
+		
+		// 3 should be the root 
+		CHECK(tree.root()->data_ == 3);
+	}
+
+	SECTION("simple, not root") {
+		auto tree = tree::bst<int>({5, 3, 7, 2, 1, 6, 8});
+		/** tree looks like
+		 * .			5
+		 *			/		\
+		 *			3		7
+		 *		/	 \	  /	  \
+		 *		1	 2   6    8
+		 */
+
+		CHECK(tree.size() == 7);
+
+		tree.erase(3);
+		tree.erase(7);
+
+		/** after erasing, tree looks like 
+		 * .			5
+		 *			/		\
+		 *			2		8
+		 *		/	 \	  /	  \
+		 *		1	     6    .
+		 */
+
+		CHECK(tree.size() == 5);
+		CHECK(tree.height() == 2);
+
+		tree.erase(5);
+
+		/** tree now looks like 
+		 * .		
+		 *		  6
+		 *		/	\
+		 *		2	8
+		 *	  /
+		 *	1
+		 */
+
+		CHECK(tree.height() == 2);
+		CHECK(tree.size() == 4);
+
+		// checking the structure of the tree 
+		CHECK(tree.root()->data_ == 6);
+		CHECK(tree.left()->data_ == 2);
+		CHECK(tree.right()->data_ == 8);
+	}
+
+	SECTION("complex tree") {
+		auto tree = tree::bst<int>({8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7});
+		CHECK(tree.size() == 14);
+		CHECK(tree.height() == 4);
+		/**	tree looks like 
+		 * .							8
+		 *					/					\
+		 *					2					10
+		 *			/			\			/		\
+		 *			-2			6		   9		12
+		 *		/		\	  /	  \		/	\	  /		
+		 *		-4		-1	  4	  7			     11
+		 *		  		 \	 /
+		 *				  1  3
+		 * 
+		 * 
+		 */
+
+		tree.erase(-2);
+		tree.infix_traversal();
+		CHECK(tree.size() == 13);
+		CHECK(tree.height() == 4);
+		/**	tree looks like
+		 * .							8
+		 *					/					\
+		 *					2					10
+		 *			/			\			/		\
+		 *			-1			6		   9		12
+		 *		/		\	  /	  \		/	\	  /
+		 *		-4		1	  4	  7			     11
+		 *		  		 	 /
+		 *				    3
+		 *
+		 *
+		 */
+
+		tree.erase(6);
+		CHECK(tree.size() == 12);
+		CHECK(tree.height() == 4);
+
+		tree.erase(9);
+		CHECK(tree.size() == 11);
+		/**
+		 * tree looks like 
+		 * .							8
+		 *					/					\
+		 *					2					10
+		 *			/			\			/		\
+		 *			-1			7					12
+		 *		/		\	  /	 				  /
+		 *		-4		1	  4	  			     11
+		 *		  		 	 /
+		 *				    3
+		 */
+			
+		tree.erase(2);
+		CHECK(tree.size() == 10);
+		CHECK(tree.height() == 3);
+		/**
+		 * tree looks like
+		 * .							8
+		 *					/					\
+		 *					3					10
+		 *			/			\			/		\
+		 *			-1			7					12
+		 *		/		\	  /	 				  /
+		 *		-4		1	  4	  			     11
+		 */
+		tree.erase(-1);
+		tree.erase(10);
+		tree.erase(7);
+
+		/**
+		 * tree now looks like
+		 * .							8
+		 *					/					\
+		 *					3					12
+		 *			/			\					\
+		 *			1			4					11
+		 *		/			  				  
+		 *		-4			  	  			     
+		 */
+		CHECK(tree.size() == 7);
+		CHECK(tree.height() ==  3);
+
+		tree.erase(8);
+		tree.erase(3);
+		tree.erase(1);
+		/**
+		 * tree now looks like
+		 * .							11
+		 *					/					\
+		 *					4					12
+		 *			/						
+		 *			-4								
+		 *		
+		 */
+		CHECK(tree.size() == 4);
+		CHECK(tree.height() == 2);
+
+		tree.erase(-4);
+		tree.erase(11);
+		/**
+		 * tree now looks like
+		 * .				12
+		 *					/			
+		 *					4					
+		 *
+		 */
+		CHECK(tree.size() == 2);
+		CHECK(tree.height() == 1);
+		tree.erase(12);
+		tree.erase(4);
+
+		CHECK(tree.is_empty());
+	}
+
+}
 // -------------------------------- SIZE AND HEIGHT TESTS -----------------------------------
 TEST_CASE("size int ") {
 	auto tree = tree::bst<int>();

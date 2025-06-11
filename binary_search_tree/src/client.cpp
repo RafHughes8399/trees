@@ -5,15 +5,21 @@
 
 
 int main(){
-	auto another_tree = tree::bst<int>();
-	another_tree.insert(2);
-	another_tree.insert(1);
-	another_tree.insert(0);
-	another_tree.insert(3);
-	another_tree.insert(4);
+	auto tree = tree::bst<int>({ 8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7 });
+	std::cout << "prior to erase " << std::endl;
+	tree.infix_traversal();
+	tree.erase(-2);
+	std::cout << "post erase" << std::endl;
+	tree.infix_traversal();
 
+	if (tree.size() == 13) {
+		std::cout << "checked size" << std::endl;
 
-
+	}
+	if (tree.height() == 4) {
+		std::cout << "checked height" << std::endl;
+	
+	}
 	// use this area to tinker with balance interval numbers
 
 }
