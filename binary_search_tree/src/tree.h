@@ -86,35 +86,38 @@ namespace tree {
 				return; 
 			}
 			else {
-				// find the min node of tree 2
-				node* current = tree2.get();
-				node* parent = nullptr;
-				while (current->left_ != nullptr) {
+
+				// current and parent should be pointers to unique pointers
+				// then to access the unique pointer, defreference the pointer
+				// these might need to be unique ptrs but i still need to access the rest of tree 2 later on 
+				infix(tree2);
+				std::unique_ptr<node>* current = &tree2;
+				std::unique_ptr<node>* parent = nullptr;
+				while ((*current)->left_ != nullptr) {
 					parent = current;
-					current = current->left_.get();
-				}
-				// ahh ok ok ok ok ok, this is def causing issues
-				//what is the logic again
-				// if parent is not null 
-				// parent left bcomes current right
-				// current right becomes tree 2
-				if(parent != nullptr) {
-					// preserve pointer to main
-					// replace min with its right subtree
-					parent->left_ = std::move(current->right_);
+					current = &((*current)->left_);
 				}
 
-				else {
-					auto min = std::move(tree2);
- 					min->left_ = std::move(tree1);
-					tree1 = std::move(min);
+				// if current (the minimum node of tree 2) is the root, then it has no
+				// left subtree, so you only need to attach tree 1 to it 
+
+				// othwerwise, if current is not the root node of tree two
+				if(parent != nullptr) {
+					// then set parent->left to current->right, replace the minimum node with its right subtree to retain it
+					// then attach tree2 to current's right subtree
+					std::unique_ptr<node> min_node = std::move(*current);
+					*current = std::move(min_node->right_);
+					min_node->right_ = std::move(tree2);
+					min_node->left_ = std::move(tree1);
+					tree1 = std::move(min_node);
 					return;
 				}
-
-				current->left_.reset(tree1.release());
-				current->right_.reset(tree2.release());
-				tree1.reset(current);
-				return;
+				else {
+					(*current)->left_ = std::move(tree1);
+					tree1 = std::move(*current);
+					infix(tree1);
+					return;
+				}
 			}
 		}
 
@@ -162,7 +165,6 @@ namespace tree {
 				}
 				// case 2 : only right child, repositioning the right child
 				else if (tree->left_ == nullptr) {
-					
 					// replace tree with the right child 
 					tree = std::move(tree->right_);
 					return;
@@ -173,12 +175,10 @@ namespace tree {
 					return;
 				}
 				// case 4 : both children, joining their subtrees
-				else {
-					// come back to this
-					
-
+				else {					
 					auto left = std::move(tree->left_);
 					auto right = std::move(tree->right_);
+
 
 					join(left, right);
 					tree = std::move(left);
@@ -311,42 +311,86 @@ namespace tree {
 			return new_node;
 		}
 //---------------------------TRAVERSAL-----------------------------------
-		void infix(node* tree) const {
+		void infix(std::unique_ptr<node>& tree) const {
 			if (tree != nullptr) {
-				if (tree->left_ != nullptr) {
-					infix(tree->left_.get());
-				}
-				std::cout << tree->data_ << std::endl;
-				if (tree->right_ != nullptr) {
-					infix(tree->right_.get());
-				}
+				// go left
+				infix(tree->left_);
+				// print node
+				std::cout << tree->data_ << " ";
+				// go right
+				infix(tree->right_);
+			}
+			else {
+				return;
+			}
+		}
+		void prefix(std::unique_ptr<node>& tree) const {
+			if (tree != nullptr) {
+				// print node
+				std::cout << tree->data_ << " ";
+				// go left
+				prefix(tree->left_);
+				// go right
+				prefix(tree->right_);
+			}
+			else {
+				return;
 			}
 		}
 
-		void prefix(node* tree) const {
+		void postfix(const std::unique_ptr<node>& tree) const {
 			if (tree != nullptr) {
-				std::cout << tree->data_ << std::endl;
-				if (tree->left_ != nullptr) {
-					prefix(tree->left_.get());
-				}
-				if (tree->right_ != nullptr) {
-					prefix(tree->right_.get());
-				}
+				// go left
+				postfix(tree->left_);
+				// go right
+				postfix(tree->right_);
+				// print node
+				std::cout << tree->data_ << " " ;
+			}
+			else {
+				return;
+			}
+		}
+		void infix(std::unique_ptr<node>& tree) {
+			if (tree != nullptr) {
+				// go left
+				infix(tree->left_);
+				// print node
+				std::cout << tree->data_ << " ";
+				// go right
+				infix(tree->right_);
+			}
+			else {
+				return;
+			}
+		}
+		void prefix(std::unique_ptr<node>& tree) {
+			if (tree != nullptr) {
+				// print node
+				std::cout << tree->data_ << " ";
+				// go left
+				prefix(tree->left_);
+				// go right
+				prefix(tree->right_);
+			}
+			else {
+				return;
 			}
 		}
 
-		void postfix(node* tree) const {
+		void postfix(std::unique_ptr<node>& tree) {
 			if (tree != nullptr) {
-				if (tree->left_ != nullptr) {
-					postfix(tree->left_.get());
-				}
-				if (tree->right_ != nullptr) {
-					postfix(tree->right_.get());
-				}
-				std::cout << tree->data_ << std::endl;
+				// go left
+				postfix(tree->left_);
+				// go right
+				postfix(tree->right_);
+				// print node
+				std::cout << tree->data_ << " ";
+			}
+			else {
+				return;
 			}
 		}
-
 	public:
 		~bst() = default;
 
@@ -447,18 +491,30 @@ namespace tree {
 		}
 		// TRAVERSAL
 		void prefix_traversal() const {
-			prefix(root_.get());
+			prefix(root_);
+			std::cout << std::endl;
 		}
 		void infix_traversal() const {
-			infix(root_.get());
+			infix(root_);
+			std::cout << std::endl;
 		}
-
 		void postfix_traversal() const {
-			postfix(root_.get());
+			postfix(root_);
+			std::cout << std::endl;
+		}
+		void prefix_traversal() {
+			prefix(root_);
+			std::cout << std::endl;
+		}
+		void infix_traversal(){
+			infix(root_);
+			std::cout << std::endl;
 		}
 
-
-		// TODO ROTATION AND BALANCING
+		void postfix_traversal(){
+			postfix(root_);
+			std::cout << std::endl;
+		}
 		void join(bst& other) {
 			// the tree calling join is tree1, the tree passed into the function is tree 2
 			// interpretable as joining this tree to the other tree

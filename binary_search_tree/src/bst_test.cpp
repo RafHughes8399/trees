@@ -591,7 +591,6 @@ TEST_CASE("erase case - both children") {
 		 */
 
 		tree.erase(-2);
-		tree.infix_traversal();
 		CHECK(tree.size() == 13);
 		CHECK(tree.height() == 4);
 		/**	tree looks like
@@ -1270,7 +1269,8 @@ TEST_CASE("start from linked list") {
 //		|		|
 //		0		4
 //	*/
-//	tree.prefix_traversal();
+//	tree.
+// _traversal();
 //	balanceed_tree.prefix_traversal();
 //	CHECK(balanceed_tree == tree);
 //}

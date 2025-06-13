@@ -5,21 +5,40 @@
 
 
 int main(){
-	auto tree = tree::bst<int>({ 8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7 });
-	std::cout << "prior to erase " << std::endl;
+	auto tree = tree::bst<int>({ 5, 3, 7, 2, 1, 6, 8 });
+	std::cout << "FULL TREE: ";
 	tree.infix_traversal();
-	tree.erase(-2);
-	std::cout << "post erase" << std::endl;
+		/** tree looks like
+	 * .			5
+	 *			/		\
+	 *			3		7
+	 *		/	 \	  /	  \
+	 *		1	 2   6    8
+	 */
+	tree.erase(3);
+	std::cout << " POST ERASE 3: ";
 	tree.infix_traversal();
+		/** after erasing, tree looks like
+	tree.infix_traversal();
+	 * .			5
+	 *			/		\
+	 *			2		8
+	 *		/	 \	  /	  \
+	 *		1	     6    .
+	 */
 
-	if (tree.size() == 13) {
-		std::cout << "checked size" << std::endl;
+	tree.erase(7);
+	std::cout << "POST ERASE 7: ";
+	tree.prefix_traversal();
 
-	}
-	if (tree.height() == 4) {
-		std::cout << "checked height" << std::endl;
-	
-	}
-	// use this area to tinker with balance interval numbers
+	/** after erasing, tree looks like
+ * .			5
+ *			/		\
+ *			2		8
+ *		/	 \	  /	  \
+ *		1	     6    .
+ */
+
+	tree.erase(5);
 
 }
