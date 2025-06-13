@@ -130,8 +130,8 @@ namespace tree {
 		// copies that go out of scope
 		void insert(const T& data, std::unique_ptr<node>& tree) {
 			if (tree == nullptr) {
-				inserts_since_balance_++;
 				tree = std::make_unique<node>(node(data));
+				inserts_since_balance_++;
 				return;
 			}
 			else {
@@ -439,10 +439,10 @@ namespace tree {
 		// INSERTION AND DELETION
 		void insert(const T& data) {
 			insert(data, root_);
-			/*if (inserts_since_balance_ >= BALANCE_INTERVAL) {
+			if (inserts_since_balance_ >= BALANCE_INTERVAL) {
 				balance(size() / 2);
 				inserts_since_balance_ = 0;
-			}*/
+			}
 		}
 
 		void erase(const T& data) {

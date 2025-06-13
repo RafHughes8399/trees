@@ -1328,8 +1328,6 @@ TEST_CASE("simple balancing") {
 		|		|
 		0		4
 	*/
-	tree.prefix_traversal();
-	balanceed_tree.prefix_traversal();
 	CHECK(balanceed_tree == tree);
 }
 
@@ -1341,16 +1339,29 @@ TEST_CASE("balance after init list construction") {
 
 		CHECK(tree == balanced_tree);
 	}
-	SECTION("complex") {
-	
-		
-	}
 }
 
 TEST_CASE("balance a balanced tree") {
-
 	// nothing should change, a tree is balanced if the index is the midpoint 
+	SECTION("balanced after list insert") {
+		auto tree = tree::bst<int>({ 8,2,21, 3, 14, 9, 10, 11, 12, 76, 23 });
+		CHECK(tree.height() <= tree.size() / 2);
+	}
+	SECTION("balanced after manual inserts") {
+		auto tree = tree::bst<int>();
+		tree.insert(4);
+		tree.insert(0);
+		tree.insert(7);
+		tree.insert(-3);
+		tree.insert(2);
+		tree.insert(5);
+		tree.insert(9);
+		tree.insert(-1);
+		tree.insert(6);
+		
+		CHECK(tree.height() <= tree.size() / 2);
 	
+	}
 
 }
 
@@ -1370,25 +1381,40 @@ TEST_CASE("balance super large mega tree") {
 	}
 
 }
-//TEST_CASE("balance after x inserts ") {
-//	auto tree = tree::bst<int>();
-//	// create aa linked list containing balance_interval - 1 numbers
-//	for (auto i = 0; i < BALANCE_INTERVAL - 1; ++i) {
-//		tree.insert(i);
-//	}
-//
-//	CHECK(tree.size() == BALANCE_INTERVAL - 1);
-//	CHECK(tree.height() == BALANCE_INTERVAL - 2); // double check the numbers
-//
-//	tree.insert(BALANCE_INTERVAL - 1);
-//	// tree should self-balance
-//	CHECK(tree.size() == BALANCE_INTERVAL);
-//	auto balanced_tree = tree::bst<int>({ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 });
-//	CHECK(tree == balanced_tree);
-//}
-//TEST_CASE("insert auto balance") {
-//
-//};
+TEST_CASE("balance after x inserts ") {
+	auto tree = tree::bst<int>();
+	// create aa linked list containing balance_interval - 1 numbers
+	for (auto i = 0; i < BALANCE_INTERVAL - 1; ++i) {
+		tree.insert(i);
+	}
+
+	CHECK(tree.size() == BALANCE_INTERVAL - 1);
+	CHECK(tree.height() == BALANCE_INTERVAL - 2); // double check the numbers
+
+	tree.insert(BALANCE_INTERVAL - 1);
+	// tree should self-balance
+	CHECK(tree.size() == BALANCE_INTERVAL);
+	auto balanced_tree = tree::bst<int>({ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 });
+	CHECK(tree == balanced_tree);
+}
+TEST_CASE("insert auto balance") {
+	// should self balance after a certain number of inserts
+	auto tree = tree::bst<int>();
+	
+	// one multiple
+	for (auto i = 0; i < BALANCE_INTERVAL; ++i) {
+		tree.insert(i);
+	}
+	// even though it is inserted like a linked list, it should be balanced
+	CHECK(tree.size() == BALANCE_INTERVAL);
+	CHECK(tree.height() == BALANCE_INTERVAL / 2);
+
+	for (auto i = BALANCE_INTERVAL; i < (BALANCE_INTERVAL * 2); ++i) {
+		tree.insert(i);
+	}
+	CHECK(tree.size() == BALANCE_INTERVAL * 2);
+	CHECK(tree.height() == BALANCE_INTERVAL - 1);
+};
 
 TEST_CASE("simulating natural use") {
 
