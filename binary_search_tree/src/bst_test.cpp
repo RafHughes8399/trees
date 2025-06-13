@@ -95,11 +95,16 @@ TEST_CASE("tree insertion init list int") {
 		}
 
 		// presently (as of 12/04), tree balancing has not been implemented so, the two trees should
-		CHECK(tree_it.size() == 8);
-		CHECK(tree_list.size() == 8);
+		// CHECK(tree_it.size() == 8);
+		// CHECK(tree_list.size() == 8);
+		// 
+		// CHECK(tree_it.height() == nums.size() - 1);
+		// CHECK(tree_list.height() == nums.size() - 1);
 
-		CHECK(tree_it.height() == nums.size() - 1);
-		CHECK(tree_list.height() == nums.size() - 1);
+
+		// as of 13/06, tree balancing works so
+		CHECK(tree_it.size() == std::distance(nums.begin(), nums.end()));
+		CHECK(tree_it.height() == tree_it.size() / 2);
 	}
 	SECTION("init list has duplicates") {
 	
@@ -137,7 +142,9 @@ TEST_CASE("== operator overload") {
 	}
 	SECTION("same data, different structure") {
 		auto tree_1 = tree::bst<int>({ 2, 1, 3 });
-		auto tree_2 = tree::bst<int>({1, 2, 3});
+		auto tree_2 = tree::bst<int>(1);
+		tree_2.insert(2);
+		tree_2.insert(3);
 		/**
 		 * tree 1 looks like 
 		 * . 2
@@ -395,7 +402,10 @@ TEST_CASE("erase left child") {
 
 	}
 	SECTION("more compelx"){
-		auto tree = tree::bst<int>({ 6, 4, 2, 1 });
+		auto tree = tree::bst<int>(6);
+		tree.insert(4);
+		tree.insert(2);
+		tree.insert(1);
 		/** a slightly more complex tree looks like
 		 *					6
 		 * .			/
@@ -573,7 +583,11 @@ TEST_CASE("erase case - both children") {
 	}
 
 	SECTION("complex tree") {
-		auto tree = tree::bst<int>({8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7});
+		auto nums = std::vector<int>({ 8, 2, 10, 9, 6, 4, -2, 12, 11, -4, -1, 1, 3, 7 });
+		auto tree = tree::bst<int>();
+		for (auto i = nums.begin(); i != nums.end(); ++i) {
+			tree.insert(*i);
+		}
 		CHECK(tree.size() == 14);
 		CHECK(tree.height() == 4);
 		/**	tree looks like 
@@ -1079,11 +1093,17 @@ TEST_CASE("rotate left simple") {
 		 */
 		CHECK(tree.size() == 3);
 		CHECK(tree.height() == 2);
-		auto rotated_tree = tree::bst<int>({3,2,1});
+		auto rotated_tree = tree::bst<int>(3);
+		rotated_tree.insert(2);
+		rotated_tree.insert(1);
 		CHECK(rotated_tree == tree);
 	}
 	SECTION("simple tree, unbalanced toward the right, ") {
-		auto tree = tree::bst<int>{ 5, 3, 1, 9, 7, 8, 10, 11, 12};
+		auto nums = std::vector<int>({ 5, 3, 1, 9, 7, 8, 10, 11, 12 });
+		auto tree = tree::bst<int>();
+		for (auto i = nums.begin(); i != nums.end(); ++i) {
+			tree.insert(*i);
+		}
 		/**
 		 * tree looks like 
 		 *				5
@@ -1111,10 +1131,13 @@ TEST_CASE("rotate left simple") {
 		 */
 		CHECK(tree.size() == 9);
 		CHECK(tree.height() == 3);
-
-		auto rotated_tree = tree::bst<int>({
+		nums = std::vector<int>({
 				9,5,10,3,7,11,1,8,12
 			});
+		auto rotated_tree = tree::bst<int>();
+		for (auto i = nums.begin(); i != nums.end(); ++i) {
+			rotated_tree.insert(*i);
+		}
 		CHECK(tree == rotated_tree);
 	}
 }
@@ -1132,35 +1155,51 @@ TEST_CASE("rotate left from linked list ") {
 	CHECK(tree.size() == size);
 	CHECK(tree.height() == size - 1);
 	tree.rotate_left();
-	auto rotated_tree = tree::bst<int>({
-		
+	auto nums = std::vector<int>({
 		1, 0, 2, 3, 4, 5, 6, 7, 8, 9
-		
 		});
+	auto rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(tree == rotated_tree);
 	CHECK(tree.height() == 8);
 	
 
 	tree.rotate_left();
-	rotated_tree = tree::bst<int>({
-		2, 1, 0, 3, 4, 5, 6, 7, 8, 9
-		});
+	nums = std::vector<int>({ 2, 1, 0, 3, 4, 5, 6, 7, 8, 9 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(tree == rotated_tree);
 	CHECK(tree.height() == 7);
 
 	tree.rotate_left();
-	rotated_tree = tree::bst<int>({3,2,1,0,4,5,6,7,8,9});
+	nums = std::vector<int>({ 3,2,1,0,4,5,6,7,8,9 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(tree.height() == 6);
 	CHECK(rotated_tree == tree);
 
 	tree.rotate_left();
-	rotated_tree = tree::bst<int>({4,3,2,1,0,5,6,7,8,9});
+	nums = std::vector<int>({ 4,3,2,1,0,5,6,7,8,9 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(tree.height() == 5);
 	CHECK(rotated_tree == tree);
 
 
 	tree.rotate_left();
-	rotated_tree = tree::bst<int>({ 5,4,3,2,1,0, 6, 7, 8, 9 });
+	nums = std::vector<int>({ 5,4,3,2,1,0, 6, 7, 8, 9 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(tree.height() == 5);
 	CHECK(rotated_tree == tree);
 }
@@ -1195,21 +1234,25 @@ TEST_CASE("rotate right, simple ") {
 		tree.rotate_right();
 
 		// shouldn't do anything because there is no left child
-		auto rotated_tree = tree::bst<int>({ 2,3 });
+		auto rotated_tree = tree::bst<int>(2);
+		rotated_tree.insert(3);
 		CHECK(rotated_tree == tree);
 	}
 	SECTION("rotate with only left child") {
 		auto tree = tree::bst<int>({ 3,2 });
 		tree.rotate_right();
 
-		auto rotated_tree = tree::bst<int>({ 2, 3 });
+		auto rotated_tree = tree::bst<int>({2});
+		rotated_tree.insert(3);
 		CHECK(rotated_tree == tree);
 	}
 	SECTION("rotate with both children") {
 		auto tree = tree::bst<int>({2, 1, 3});
 		
 		tree.rotate_right();
-		auto rotated_tree = tree::bst<int>({1, 2, 3});
+		auto rotated_tree = tree::bst<int>(1);
+		rotated_tree.insert(2);
+		rotated_tree.insert(3);
 		CHECK(rotated_tree == tree);
 	}
 }
@@ -1221,87 +1264,115 @@ TEST_CASE("start from linked list") {
 	}
 
 	tree.rotate_right();
-	auto rotated_tree = tree::bst<int>({8, 9, 7, 6, 5, 4, 3, 2, 1, 0});
+	auto nums = std::vector<int>({ 8, 9, 7, 6, 5, 4, 3, 2, 1, 0 });
+	auto rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(rotated_tree == tree);
 
 	tree.rotate_right();
-	rotated_tree = tree::bst<int>({ 7, 8, 9, 6, 5, 4, 3, 2, 1, 0 });
+	nums = std::vector<int>({ 7, 8, 9, 6, 5, 4, 3, 2, 1, 0 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(rotated_tree == tree);
 
 	tree.rotate_right();
-	rotated_tree = tree::bst<int>({6, 7, 8, 9, 5, 4, 3, 2, 1, 0});
+	nums = std::vector<int>({ 6, 7, 8, 9, 5, 4, 3, 2, 1, 0 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(rotated_tree == tree);
 
 	tree.rotate_right();
-	rotated_tree = tree::bst<int>({5, 6, 7, 8, 9, 4, 3, 2, 1, 0});
+	nums = std::vector<int>({ 5, 6, 7, 8, 9, 4, 3, 2, 1, 0 });
+	rotated_tree = tree::bst<int>();
+	for (auto i = nums.begin(); i != nums.end(); ++i) {
+		rotated_tree.insert(*i);
+	}
 	CHECK(rotated_tree == tree);
 }
 
-//TEST_CASE("complex rotation") {
-//	SECTION("unbalanced toward the left, need to balance by rotating right") {
-//	
-//	}
-//}
-//
-//TEST_CASE("simple balanceing") {
-//	// parition at the midpoint,
-//	// need some way to track the nodes, reduce the time cost for size 
-//	auto tree = tree::bst<int>({1,0,3,2,4});
-//
-//	auto size = tree.size();
-//	tree.balance(size / 2);
-//
-//	/*
-//				1
-//			/		\
-//			0		3
-//				/		\
-//				2		4
-//
-//	*/
-//	// take a step back for a second and think, what does balanceing do 
-//	auto balanceed_tree = tree::bst<int>({2, 1, 3, 0, 4});
-//	// what should this tree look like, answer that question 
-//	/*
-//			2
-//		/		\
-//		1		3
-//		|		|
-//		0		4
-//	*/
-//	tree.
-// _traversal();
-//	balanceed_tree.prefix_traversal();
-//	CHECK(balanceed_tree == tree);
-//}
-//
-//TEST_CASE("balance after init list construction") {
-//
-//}
-//
-//TEST_CASE("balance a balanced tree") {
-//
-//}
-//
-//TEST_CASE("non size / 2 balance") {
-//
-//}
-//
-//TEST_CASE("balance super large mega tree") {
-//	SECTION("basically a linked list") {
-//	
-//	}
-//	SECTION("slightly unbalanced") {
-//	
-//	}
-//	SECTION("nearly balanced") {
-//	
-//	}
-//
-//}
+TEST_CASE("complex rotation") {
+	SECTION("unbalanced toward the left, need to balance by rotating right") {
+	
+	}
+}
+
+TEST_CASE("simple balancing") {
+	// parition at the midpoint,
+	// need some way to track the nodes, reduce the time cost for size 
+	auto tree = tree::bst<int>({1,0,3,2,4});
+
+	auto size = tree.size();
+	tree.balance(size / 2);
+
+	/*
+				1
+			/		\
+			0		3
+				/		\
+				2		4
+
+	*/
+	// take a step back for a second and think, what does balanceing do 
+	auto balanceed_tree = tree::bst<int>({2, 1, 3, 0, 4});
+	// what should this tree look like, answer that question 
+	/*
+			2
+		/		\
+		1		3
+		|		|
+		0		4
+	*/
+	tree.prefix_traversal();
+	balanceed_tree.prefix_traversal();
+	CHECK(balanceed_tree == tree);
+}
+
+TEST_CASE("balance after init list construction") {
+	SECTION("simple") {
+		auto tree = tree::bst<int>({2, 1, 3, 4, 5});
+
+		auto balanced_tree = tree::bst<int>({3,2,1,4,5});
+
+		CHECK(tree == balanced_tree);
+	}
+	SECTION("complex") {
+	
+		
+	}
+}
+
+TEST_CASE("balance a balanced tree") {
+
+	// nothing should change, a tree is balanced if the index is the midpoint 
+	
+
+}
+
+TEST_CASE("non size / 2 balance") {
+
+}
+
+TEST_CASE("balance super large mega tree") {
+	SECTION("basically a linked list") {
+			
+	}
+	SECTION("slightly unbalanced") {
+	
+	}
+	SECTION("nearly balanced") {
+	
+	}
+
+}
 //TEST_CASE("balance after x inserts ") {
 //	auto tree = tree::bst<int>();
-//	// creaate aa linked list containing balance_interval - 1 numbers
+//	// create aa linked list containing balance_interval - 1 numbers
 //	for (auto i = 0; i < BALANCE_INTERVAL - 1; ++i) {
 //		tree.insert(i);
 //	}

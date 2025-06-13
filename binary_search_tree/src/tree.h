@@ -90,7 +90,6 @@ namespace tree {
 				// current and parent should be pointers to unique pointers
 				// then to access the unique pointer, defreference the pointer
 				// these might need to be unique ptrs but i still need to access the rest of tree 2 later on 
-				infix(tree2);
 				std::unique_ptr<node>* current = &tree2;
 				std::unique_ptr<node>* parent = nullptr;
 				while ((*current)->left_ != nullptr) {
@@ -267,8 +266,8 @@ namespace tree {
 			tree = std::move(new_root);
 		}
 
-		// a tree is oncisdered balanced if  the left and right subtrees differ by less than one
-		node* balance(node* tree, size_t index) {
+		// a tree is considered balanced if  the left and right subtrees differ by less than one
+		void balance(std::unique_ptr<node>& tree, size_t index) {
 			auto left_size = int(size(tree->left_.get()));
 
 			// repeats until the index and the left subtree are the same height
@@ -280,9 +279,9 @@ namespace tree {
 				is "taller" than the right, so rotate right
 			*/
 			if (index < left_size) {
-				tree->left_.reset(balance(tree->left_.get(), index));
-				tree = rotate_right(tree);
-				return tree;
+				balance(tree->left_, index);
+				rotate_right(tree);
+				return;
 			}
 			// rebalance in favour of the right
 			/*
@@ -290,11 +289,12 @@ namespace tree {
 				then index moves one to the lefft 
 			*/
 			else if(index > left_size){
-				tree->right_.reset(balance(tree->right_.get(), index - left_size - 1));
-				tree = rotate_left(tree);
-				return tree;
+				balance(tree->right_, index - left_size - 1);
+				rotate_left(tree);
+				return;
 			}
-			return tree;
+			// a tree is balanced if index == left_size
+			return;
 		}
 
 //-----------------------------CLEAR AND COPY-------------------------------------
@@ -413,7 +413,7 @@ namespace tree {
 			for (auto it = first; it != last; ++it) {
 				insert(*it);
 			}
-			//balance(num / 2);
+			balance(num / 2);
 		}
 		// INIT LIST CONSTRUCTOR
 		bst(std::initializer_list<T> list)
@@ -547,7 +547,7 @@ namespace tree {
 		}
 
 		void balance(int index) {
-			root_.reset(balance(root_.get(), index));
+			balance(root_, index);
 		}		
 
 		// OPERATOR OVERLOADS
