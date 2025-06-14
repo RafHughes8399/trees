@@ -187,7 +187,19 @@ namespace tree {
 			return;				// if not found
 		}
 
-//--------HEIGHT, SIZE, CONTAINS AND LOOKUP----------------
+//------------------------CLEAR--------------------------------------------
+		void clear(std::unique_ptr<node>& tree) {
+			// recursively reset the pointers of each tree
+			if (tree != nullptr) {
+				// clear the left subtree 
+				clear(tree->left_);
+				// clear the right subtree
+				clear(tree->right_);
+				// reset the root
+				tree.reset();
+			}
+		}
+//----------------------HEIGHT, SIZE, CONTAINS AND LOOKUP------------------
 
 		size_t size(node* tree) const {
 			if (tree == nullptr) { return 0;}
@@ -480,6 +492,9 @@ namespace tree {
 			return find(data, root_.get());
 		}
 		
+		void clear() {
+			clear(root_);
+		}
 
 		// MIN AND MAX
 		T min() const {

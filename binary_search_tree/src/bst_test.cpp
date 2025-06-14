@@ -1296,12 +1296,6 @@ TEST_CASE("start from linked list") {
 	CHECK(rotated_tree == tree);
 }
 
-TEST_CASE("complex rotation") {
-	SECTION("unbalanced toward the left, need to balance by rotating right") {
-	
-	}
-}
-
 TEST_CASE("simple balancing") {
 	// parition at the midpoint,
 	// need some way to track the nodes, reduce the time cost for size 
@@ -1417,5 +1411,98 @@ TEST_CASE("insert auto balance") {
 };
 
 TEST_CASE("simulating natural use") {
+	// define a tree 
+	auto tree = tree::bst<int>();
+	// insert a few values 
+	tree.insert(18);
+	tree.insert(10);
+	tree.insert(26);
+	tree.insert(7);
+	tree.insert(14);
+	tree.insert(21);
+	tree.insert(30);
+	tree.insert(-2);
+	tree.insert(8);
+	tree.insert(4);
+	tree.insert(25);
+	tree.insert(19);
+	//12 inserts
+	/*		tree looks like 
+								18
+						/				\
+					10						26
+				/		\				/		\
+				7		14				21		30
+			/	  \		/	\		/		\
+		-2		8					19		25
+			\
+			4
+	*/
+	// look for them 
+	CHECK(tree.contains(25));
+	CHECK(tree.contains(7));
+	CHECK(tree.contains(10));
+	CHECK(!tree.contains(2));
+	CHECK(!tree.contains(199));
+	CHECK(!tree.contains(-10));
+	// check size and height
+	CHECK(tree.size() == 12);
+	CHECK(tree.height() == 4);
+	// erase one or two 
+	tree.erase(26);
+	tree.erase(4);
+	tree.erase(14);
+	tree.erase(65);
+	CHECK(tree.size() == 9);
+	// get the max and min 
+	CHECK(tree.min() == -2);
+	CHECK(tree.max() == 30);
+	// insert a couple more 
+	tree.insert(32);
+	tree.insert(10); // duplicate insert
+	tree.insert(20);
+	tree.insert(29);
+	CHECK(tree.size() == 12);
+	// find a node
+	auto node = tree.find(29);
+	CHECK(node != nullptr);
+	
+	node = tree.find(4);
+	CHECK(node == nullptr);
+	// print the tree 
+	tree.prefix_traversal();
+	tree.infix_traversal();
+	tree.postfix_traversal();
+	// define another tree, remember min 2 > max 1 
+	auto tree_size = tree.size();
+	auto tree_sequel = tree::bst<int>({54, 40, 62, 70, 92, 50, 43, 35, 76, 87, 61, 39});
+	auto tree_sequel_size = tree_sequel.size();
+	// join the first to the second 
+	tree.join(tree_sequel);
+	// balance the resulting tree 
+	tree.balance(tree.size() / 2);
+	// check the size and height 
+	CHECK(tree.size() == tree_size + tree_sequel_size);
+	// find the max and min
+	auto min = tree.min();
+	auto max = tree.max();
 
+	// remove them both 
+	tree.erase(min);
+	tree.erase(max);
+
+	// remove everything 
+	tree.clear();
+	CHECK(tree.is_empty());
+}
+TEST_CASE("other data types") {
+	SECTION("comparable data types - i.e the type can be ordered") {
+		// char 
+		
+		// double
+
+		// string 
+
+		// custom (items in a database)
+	}
 }
