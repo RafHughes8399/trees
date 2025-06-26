@@ -14,5 +14,5 @@ TEST_CASE("octree empty construction"){
     auto otree = tree::octree(WORLD_BOX); 
     CHECK(otree.size() == 0);
     CHECK(otree.height() == 0);
-    CHECK(true)
+    CHECK(true);
 }
