@@ -60,7 +60,7 @@ TEST_CASE("move constructor and overload") {
 	CHECK(tree_1.root() == nullptr);
 
 	// check tree_2 contains all the original nodes
-	for (auto i = 0; i < tree_nodes.size(); ++i) {
+	for (size_t i = 0; i < tree_nodes.size(); ++i) {
 		CHECK(tree_2.contains(tree_nodes.at(i)));
 	}
 	CHECK(tree_2.size() == tree_nodes.size());
@@ -70,7 +70,7 @@ TEST_CASE("move constructor and overload") {
 
 	CHECK(tree_2.is_empty());
 
-	for (auto i = 0; i < tree_nodes.size(); ++i) {
+	for (size_t i = 0; i < tree_nodes.size(); ++i) {
 		CHECK(tree_3.contains(tree_nodes.at(i)));
 	}
 	CHECK(tree_3.size() == tree_nodes.size());
@@ -103,7 +103,7 @@ TEST_CASE("tree insertion init list int") {
 
 
 		// as of 13/06, tree balancing works so
-		CHECK(tree_it.size() == std::distance(nums.begin(), nums.end()));
+		CHECK(tree_it.size() == size_t(std::distance(nums.begin(), nums.end())));
 		CHECK(tree_it.height() == tree_it.size() / 2);
 	}
 	SECTION("init list has duplicates") {
@@ -706,15 +706,15 @@ TEST_CASE("erase case - both children") {
 // -------------------------------- SIZE AND HEIGHT TESTS -----------------------------------
 TEST_CASE("size int ") {
 	auto tree = tree::bst<int>();
-	for (auto i = 0; i < 10; ++i) {
-		tree.insert(i);
+	for (size_t i = 0; i < 10; ++i) {
+		tree.insert(int(i));
 		CHECK(tree.size() == i + 1);
 	}
 }
 
 TEST_CASE("size char") {
 	auto tree = tree::bst<char>();
-	auto size = 1;
+	size_t size = 1;
 	for (auto i = 'a'; i < 'f'; ++i) {
 		tree.insert(i);
 		CHECK(tree.size() == size);
@@ -1150,10 +1150,10 @@ TEST_CASE("rotate left from linked list ") {
 		tree.insert(i);
 	}
 
-	auto size = 10;
+	size_t size = 10;
 	// balanced tree 
 	CHECK(tree.size() == size);
-	CHECK(tree.height() == size - 1);
+	CHECK(size_t(tree.height()) == size - 1);
 	tree.rotate_left();
 	auto nums = std::vector<int>({
 		1, 0, 2, 3, 4, 5, 6, 7, 8, 9
@@ -1339,7 +1339,7 @@ TEST_CASE("balance a balanced tree") {
 	// nothing should change, a tree is balanced if the index is the midpoint 
 	SECTION("balanced after list insert") {
 		auto tree = tree::bst<int>({ 8,2,21, 3, 14, 9, 10, 11, 12, 76, 23 });
-		CHECK(tree.height() <= tree.size() / 2);
+		CHECK(size_t(tree.height()) <= size_t(tree.size() / 2));
 	}
 	SECTION("balanced after manual inserts") {
 		auto tree = tree::bst<int>();
@@ -1353,7 +1353,7 @@ TEST_CASE("balance a balanced tree") {
 		tree.insert(-1);
 		tree.insert(6);
 		
-		CHECK(tree.height() <= tree.size() / 2);
+		CHECK(tree.height() <= int(tree.size() / 2));
 	
 	}
 

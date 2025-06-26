@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include <vector>
 #include <memory>
 #include <algorithm>
 #include <iostream>
@@ -10,6 +12,74 @@
 // call the private method and pass in root_
 
 #define BALANCE_INTERVAL 15
+
+
+namespace game{
+	struct Vector3{
+		float x;
+		float y;
+		float z;
+
+	};
+	
+	inline Vector3 Vector3Add(Vector3 a, Vector3 b){
+		return Vector3{a.x + b.x, a.y + b.y, a.z + b.z};
+
+	}
+	inline Vector3 Vector3Scale(Vector3 a, float s){
+		return Vector3{a.x * s, a.y * s, a.z * s};
+
+	}
+
+	struct BoundingBox{
+		Vector3 min;
+		Vector3 max;
+
+	};
+
+
+	class Object {
+		public:
+			Object(Vector3 position, Vector3 size)
+				: position_(position), size_(size){
+				// generate the bounding box, min and max
+				bounding_box_ = BoundingBox{ Vector3{position_.x - (size_.x / 2), position_.y - (size_.y / 2), position_.z - (size_.z / 2)},
+					Vector3{position_.x + (size_.x / 2), position_.y + (size_.y / 2), position_.z + (size_.z / 2)} };			
+				};
+			Object(const Object& other)
+				:  position_(other.position_), size_(other.size_), bounding_box_(other.bounding_box_){
+			};
+		
+			Object(Object&& other)
+				: position_(std::move(other.position_)), size_(std::move(other.size_)), bounding_box_(std::move(other.bounding_box_)) {
+			};
+
+			BoundingBox& get_bounding_box(){
+				return bounding_box_;
+			}
+		
+		protected:
+			// all objects have a model and position, and a hitbox
+			Vector3 position_;
+			Vector3 size_;
+			BoundingBox bounding_box_;
+		};
+		
+	class TestObject : public Object {
+	public:
+		TestObject(game::Vector3 position, game::Vector3 size)
+		: Object(position, size){
+		};
+		TestObject(const TestObject& other)
+			: Object(other){
+	
+		};
+		TestObject(TestObject&& other)
+			: Object(other) {
+		};			
+	};	
+}
+
 
 namespace tree {
 	template <typename T>
@@ -206,7 +276,7 @@ namespace tree {
 			else {return size_t(1 + size(tree->left_.get()) + size(tree->right_.get()));}
 		}
 
-		size_t height(node* tree) const {
+		int height(node* tree) const {
 			if (tree == nullptr) {return -1;}
 			else {
 				int left_height = height(tree->left_.get());
@@ -280,7 +350,7 @@ namespace tree {
 
 		// a tree is considered balanced if  the left and right subtrees differ by less than one
 		void balance(std::unique_ptr<node>& tree, size_t index) {
-			auto left_size = int(size(tree->left_.get()));
+			size_t left_size = size(tree->left_.get());
 
 			// repeats until the index and the left subtree are the same height
 			// in the case of size / 2, it evens the tree out  
@@ -301,7 +371,7 @@ namespace tree {
 				then index moves one to the lefft 
 			*/
 			else if(index > left_size){
-				balance(tree->right_, index - left_size - 1);
+				balance(tree->right_, size_t(index - left_size - 1));
 				rotate_left(tree);
 				return;
 			}
@@ -425,7 +495,7 @@ namespace tree {
 			for (auto it = first; it != last; ++it) {
 				insert(*it);
 			}
-			balance(num / 2);
+			balance(size_t(num / 2));
 		}
 		// INIT LIST CONSTRUCTOR
 		bst(std::initializer_list<T> list)
@@ -452,7 +522,7 @@ namespace tree {
 		void insert(const T& data) {
 			insert(data, root_);
 			if (inserts_since_balance_ >= BALANCE_INTERVAL) {
-				balance(size() / 2);
+				balance(size_t(size() / 2));
 				inserts_since_balance_ = 0;
 			}
 		}
@@ -473,7 +543,7 @@ namespace tree {
 		}
 
 		// SIZE AND HEIGHT
-		int size() const {
+		size_t size() const {
 			return size(root_.get());
 		}
 		bool is_empty() const {
@@ -561,7 +631,7 @@ namespace tree {
 			rotate_left(root_);
 		}
 
-		void balance(int index) {
+		void balance(size_t index) {
 			balance(root_, index);
 		}		
 
@@ -575,4 +645,146 @@ namespace tree {
 			return equals(root_.get(), other.root_.get());
 		}
 	};
+
+
+	#define NODE_LIFETIME 30 // seconds
+	#define MAX_DEPTH 5 // max height of the tree 
+
+	class octree {
+	protected:
+		// node definition
+		struct o_node {
+			std::vector<std::unique_ptr<game::Object>> objects_;
+			std::vector<std::unique_ptr<o_node>> children_;
+			game::BoundingBox bounds_;
+			int depth_;
+			short life_; // how long a o_node has lived without any objects
+		};
+	
+		private:
+		std::unique_ptr<o_node> root_;
+		int max_depth_;
+		// methods
+	
+	
+		// checks if an object is contained within a o_node's bounding box
+		bool node_contains_object(game::BoundingBox& node, game::BoundingBox& object);
+
+		// build the children of a leaf node in the tree
+		void build_children(std::unique_ptr<o_node>& tree);
+
+		// insert an object into the tree
+		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+
+		// reposition an Object within the tree after it moves
+		std::unique_ptr<game::Object> extract(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void reposition(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+
+
+		// get the o_node the object is located in 
+		o_node* find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+	
+		// same logic but returns the object instead of the o_node 
+		game::Object* find_object(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+	
+		int height(std::unique_ptr<o_node>& tree);
+		size_t size(std::unique_ptr<o_node>& tree);
+	
+		bool is_empty(std::unique_ptr<o_node>& tree);
+		bool is_leaf(std::unique_ptr<o_node>& tree);
+	
+		void check_leaves(std::unique_ptr<o_node>& tree, double delta);
+	
+	public:
+	// CONSTRUCTORS
+		~octree() = default;
+		// creates an empty octree with a root o_node
+		octree(game::BoundingBox root_bounds)
+			: root_(std::make_unique<o_node>()), max_depth_(MAX_DEPTH) {
+			root_->bounds_ = root_bounds;
+			root_->life_ = 0;
+			root_->depth_ = 0;
+	
+		}
+		// creates an octree of the defined depth
+		octree(game::BoundingBox root_bounds, int depth)
+			: root_(std::make_unique<o_node>()), max_depth_(depth) {
+			root_->bounds_ = root_bounds;
+			root_->life_ = 0;
+			root_->depth_ = 0;
+	
+			// build lazily
+		}
+		// creates an empty octree, then populates it with the list of objects
+		template<typename InputIt>
+		octree(game::BoundingBox root_bounds, InputIt first, InputIt last)
+			: octree(root_bounds) { // initialise the root o_node
+			for (auto i = first; i != last; ++i) {
+				insert(*i);
+			}
+		}
+	
+		octree(game::BoundingBox root_bounds, std::vector<std::unique_ptr<game::Object>>& objects)
+			: octree(root_bounds, objects.begin(), objects.end()) {
+		}
+	
+		// copy and move overloads
+		octree(const octree& other);
+		octree(octree&& other);
+	
+		octree& operator= (const octree& other);
+		octree& operator=(octree&& other);
+	
+		void insert(std::unique_ptr<game::Object>& obj) {
+			insert(root_, obj);
+		}
+		void erase(std::unique_ptr<game::Object>& obj);
+		std::unique_ptr<game::Object> extract(std::unique_ptr<game::Object>& obj);
+		void reposition(std::unique_ptr<game::Object>& obj);
+	
+		std::unique_ptr<o_node>& get_root() {
+			return root_;
+		}
+		std::vector<std::unique_ptr<o_node>>& get_children() {
+			return root_->children_;
+		}
+		std::vector<std::unique_ptr<game::Object>>& get_objects() {
+			return root_->objects_;
+		}
+	
+		int height() {
+			return height(root_);
+		}
+		size_t size() {
+			return size(root_);
+		}
+	
+		bool is_leaf() {
+			return is_leaf(root_);
+		}
+		bool is_empty() {
+			return is_empty(root_);
+		}
+	
+		// checks leaves for their life, prunes if need be
+		void check_leaves(double delta) {
+			check_leaves(root_, delta);
+		}
+	
+		o_node* find_object_node(std::unique_ptr<game::Object>& obj) {
+			return find_object_node(root_, obj);
+		}
+	
+		game::Object* find_object(std::unique_ptr<game::Object>& obj) {
+			return find_object(root_, obj);
+		}
+	
+		// for testing purposes 
+		bool object_in_node(game::BoundingBox& node, game::BoundingBox& obj) {
+			return node_contains_object(node, obj);
+		}
+	
+	};
 }
+
