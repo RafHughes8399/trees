@@ -16,3 +16,68 @@ TEST_CASE("octree empty construction"){
     CHECK(otree.height() == 0);
     CHECK(true);
 }
+
+TEST_CASE("octree define max height"){
+    auto otree = tree::octree(WORLD_BOX, 3);
+    CHECK(otree.size() == 0);
+    CHECK(otree.height() == 0);
+
+}
+
+
+TEST_CASE("octree insert"){
+    auto otree = tree::octree(WORLD_BOX);
+    // max depth is 5
+
+    // test object takes a position and size vector
+    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
+    auto test_size = game::Vector3{20.0, 20.0, 20.0};
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size);
+    auto obj_box = test_object->get_bounding_box();
+
+    std::unique_ptr<game::Object> search_object = std::make_unique<game::TestObject>(test_pos, test_size);
+
+
+    otree.insert(test_object);
+    // check object was inserted
+    CHECK(otree.size() == 1);
+    
+    // 
+    auto node = otree.find_object_node(search_object);
+    CHECK(node->objects_.size() == 1);
+    
+    // check that the object fits in the node but not its children,
+    // if they do exist
+    CHECK(otree.object_in_node(node->bounds_, obj_box));
+    
+    for(auto& child : node->children_){
+        CHECK( not otree.object_in_node(child->bounds_, obj_box));
+    }
+}
+
+TEST_CASE("insert inspect"){
+    // check the qualities of the node that the object was inserted in 
+    auto otree = tree::octree(WORLD_BOX);
+    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
+    auto test_size = game::Vector3{20.0, 20.0, 20.0};
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size);
+    auto obj_box = test_object->get_bounding_box();
+
+    std::cout << "object bounding box " << std::endl;
+    game::print_box(obj_box);
+
+    // traverse through the tree, print the node box and the child boxes
+    
+}
+
+TEST_CASE("insert single - leaf node"){
+
+
+}
+TEST_CASE("insert multiple - same node"){
+
+
+}
+TEST_CASE("insert multiple - different nodes"){
+
+}

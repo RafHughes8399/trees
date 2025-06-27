@@ -31,15 +31,25 @@ namespace game{
 
 	}
 
+	inline bool Vector3Equal(Vector3 a, Vector3 b){
+		return a.x == b.x and a.y == b.y and a.z == b.z;
+	}
 	struct BoundingBox{
 		Vector3 min;
 		Vector3 max;
 
 	};
+	inline bool BoundingBoxEqual(BoundingBox a, BoundingBox b){
+		return Vector3Equal(a.min, b.min) and Vector3Equal(a.max, b.max);
+	}
+	inline void print_box(BoundingBox& a){
+		std::cout << "MIN : " << a.min.x << ", " << a.min.y << ", " << a.min.z << std::endl; 
+		std::cout << "MAX : " << a.max.x << ", " << a.max.y << ", " << a.max.z << std::endl; 
 
-
+	}
 	class Object {
 		public:
+			virtual ~Object() = default;
 			Object(Vector3 position, Vector3 size)
 				: position_(position), size_(size){
 				// generate the bounding box, min and max
@@ -54,10 +64,12 @@ namespace game{
 				: position_(std::move(other.position_)), size_(std::move(other.size_)), bounding_box_(std::move(other.bounding_box_)) {
 			};
 
-			BoundingBox& get_bounding_box(){
+			BoundingBox get_bounding_box(){
 				return bounding_box_;
 			}
-		
+			
+    		virtual bool operator==(const Object& other) const = 0;  // Make it const and pure virtual
+
 		protected:
 			// all objects have a model and position, and a hitbox
 			Vector3 position_;
@@ -67,6 +79,7 @@ namespace game{
 		
 	class TestObject : public Object {
 	public:
+		~TestObject() override = default;
 		TestObject(game::Vector3 position, game::Vector3 size)
 		: Object(position, size){
 		};
@@ -77,6 +90,13 @@ namespace game{
 		TestObject(TestObject&& other)
 			: Object(other) {
 		};			
+		bool operator==(const Object& other) const override {  // Make it const
+			auto* other_test = dynamic_cast<const TestObject*>(&other);
+			if (!other_test) return false;
+			
+			return game::Vector3Equal(position_, other_test->position_) and Vector3Equal(
+				size_, other_test->size_) and BoundingBoxEqual(bounding_box_, other_test->bounding_box_);
+			}
 	};	
 }
 
@@ -695,7 +715,8 @@ namespace tree {
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 	
 		void check_leaves(std::unique_ptr<o_node>& tree, double delta);
-	
+		
+		void traverse_tree(std::unique_ptr<o_node>& tree);
 	public:
 	// CONSTRUCTORS
 		~octree() = default;
@@ -784,7 +805,10 @@ namespace tree {
 		bool object_in_node(game::BoundingBox& node, game::BoundingBox& obj) {
 			return node_contains_object(node, obj);
 		}
-	
+		
+		void traverse_tree(){
+			traverse_tree(root_);
+		}
 	};
 }
 

@@ -114,7 +114,7 @@ tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tr
         return nullptr;
     }
     for (auto& obj : tree->objects_) {
-        if (obj.get() == object.get()) {
+        if (*obj == *object) {
             return tree.get();
         }
     }
@@ -209,3 +209,7 @@ void tree::octree::check_leaves(std::unique_ptr<o_node>& tree, double delta) {
         }
     return;
 } 
+
+void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
+		return;
+}
