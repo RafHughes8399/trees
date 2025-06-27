@@ -66,8 +66,15 @@ TEST_CASE("insert inspect"){
     std::cout << "object bounding box " << std::endl;
     game::print_box(obj_box);
 
+    std::cout << "tree bounding box pre insert " << std::endl;
     // traverse through the tree, print the node box and the child boxes
+    otree.traverse_tree();
     
+    otree.insert(test_object);
+    std::cout << "tree bounding box pre insert " << std::endl;
+    otree.traverse_tree();
+    
+
 }
 
 TEST_CASE("insert single - leaf node"){

@@ -211,5 +211,17 @@ void tree::octree::check_leaves(std::unique_ptr<o_node>& tree, double delta) {
 } 
 
 void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
+		// print the box of the node 
+		if(!tree){
+			return;
+		}
+		game::print_box(tree->bounds_);
+		for(auto& object : tree->objects_){
+			object->print_object();
+		}
+		for(auto& child : tree->children_){
+			traverse_tree(child);
+		}
+		// print its children
 		return;
 }

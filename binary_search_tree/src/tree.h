@@ -69,7 +69,13 @@ namespace game{
 			}
 			
     		virtual bool operator==(const Object& other) const = 0;  // Make it const and pure virtual
-
+			inline void print_object(){
+				
+				std::cout << "object at position " << position_.x << ", " << position_.y << ", " 
+				<< position_.z <<  std::endl;
+				
+				print_box(bounding_box_);
+			}
 		protected:
 			// all objects have a model and position, and a hitbox
 			Vector3 position_;
