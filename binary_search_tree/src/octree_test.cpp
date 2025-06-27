@@ -76,7 +76,68 @@ TEST_CASE("insert inspect"){
     
 
 }
+TEST_CASE("insert objects into children"){
+    auto otree = tree::octree(WORLD_BOX);
 
+    // bang in the centre of the octant
+    
+    auto centre = game::Vector3Add(game::Vector3{-762, -64, -762}, game::Vector3{0, 0 ,0});
+    centre = game::Vector3Scale(centre, 0.5);
+    auto size = game::Vector3{10, 10, 10};
+    std::unique_ptr<game::Object> lbb = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(lbb);
+    
+    centre = game::Vector3Add(game::Vector3{-762, -64, 0}, game::Vector3{0, 0, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> lbf = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(lbf);
+
+    centre = game::Vector3Add(game::Vector3{-762, 0, -762}, game::Vector3{0, 64, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> ltb = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(ltb);
+    
+    centre = game::Vector3Add(game::Vector3{-762, 0, 0}, game::Vector3{0, 64, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> ltf = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(ltf);
+    
+    centre = game::Vector3Add(game::Vector3{0, -64, -762}, game::Vector3{762, 0, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rbb = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(rbb);
+    
+    
+    centre = game::Vector3Add(game::Vector3{0, -64, 0}, game::Vector3{762, 0, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    
+    std::unique_ptr<game::Object> rbf = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(rbf);
+    
+    centre = game::Vector3Add(game::Vector3{0, 0, -762}, game::Vector3{762, 64, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rtb = std::make_unique<game::TestObject>(centre, size);
+    
+    otree.insert(rtb);
+    
+    centre = game::Vector3Add(game::Vector3{0, 0, 0}, game::Vector3{762, 64, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size);
+
+    otree.insert(rtf);
+
+    CHECK(otree.size() == 8);
+
+    CHECK(otree.height() == 1); // should insert directly into the root's children
+    otree.traverse_tree();
+
+}
 TEST_CASE("insert single - leaf node"){
 
 

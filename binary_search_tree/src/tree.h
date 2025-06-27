@@ -695,7 +695,7 @@ namespace tree {
 	
 		// checks if an object is contained within a o_node's bounding box
 		bool node_contains_object(game::BoundingBox& node, game::BoundingBox& object);
-
+		bool object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object);
 		// build the children of a leaf node in the tree
 		void build_children(std::unique_ptr<o_node>& tree);
 
