@@ -1,3 +1,4 @@
+#include <experimental/random>
 #include "tree.h"
 #include "../lib/catch2/catch.hpp"
 
@@ -138,14 +139,79 @@ TEST_CASE("insert objects into children"){
     otree.traverse_tree();
 
 }
-TEST_CASE("insert single - leaf node"){
-
-
-}
 TEST_CASE("insert multiple - same node"){
+    auto otree = tree::octree(WORLD_BOX);
 
-
+    // inserting into right top back 
+    auto position = game::Vector3{300, 20, -300};
+    auto size = game::Vector3{10, 10, 10};
+    std::unique_ptr<game::Object> test_obj = std::make_unique<game::TestObject>(position, size);
+    otree.insert(test_obj);
+    
+    position = game::Vector3Add(position, game::Vector3{10, -5, 20});
+    std::unique_ptr<game::Object> another_test_obj = std::make_unique<game::TestObject>(position, size);
+    otree.insert(another_test_obj);
+    
+    position = game::Vector3Add(position, game::Vector3{-20, 0, -10});
+    std::unique_ptr<game::Object> and_another_test_obj = std::make_unique<game::TestObject>(position, size);
+    otree.insert(and_another_test_obj);
+    
+    CHECK(otree.size() == 3);
+    CHECK(otree.height() == 2);
 }
 TEST_CASE("insert multiple - different nodes"){
+    auto position = game::Vector3{}; 
+    auto size = game::Vector3{5, 5, 5};
+
+    auto otree = tree::octree(WORLD_BOX, 4);
+    // non-deterministic - TODO: change
+    for(auto i = 0; i < 24; ++i){
+        auto x = std::experimental::randint(int(WORLD_MIN.x), int(WORLD_MAX.x));
+        auto y = std::experimental::randint(int(WORLD_MIN.y), int(WORLD_MAX.y));
+        auto z = std::experimental::randint(int(WORLD_MIN.z), int(WORLD_MAX.z));
+
+        position = game::Vector3{float(x), float(y),float(z)};
+        std::unique_ptr<game::Object> obj = std::make_unique<game::TestObject>(position, size);
+        otree.insert(obj);
+    }
+    CHECK(otree.size() == 23);
+    CHECK(otree.height() <= 4);
+}
+
+TEST_CASE("insert to max depth"){
+    // insert an object at the max depth of a tree, compare two trees
+    // with different max depths
+    auto otree_3 = tree::octree(WORLD_BOX, 3);
+    auto otree_4 = tree::octree(WORLD_BOX, 4);
+    auto otree_max = tree::octree(WORLD_BOX);
+
+    auto position = game::Vector3{5, 3, 5};
+    auto size = game::Vector3{0.5, 0.5, 0.5};
+
+    std::unique_ptr<game::Object> obj_3 = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> obj_4 = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> obj_5 = std::make_unique<game::TestObject>(position, size);
+    
+    otree_3.insert(obj_3);
+    otree_4.insert(obj_4);
+    otree_max.insert(obj_5);
+
+    CHECK(otree_3.size() == otree_4.size());
+    CHECK(otree_4.size() == otree_max.size());
+
+    CHECK(otree_3.height() == otree_3.max_depth());
+    CHECK(otree_4.height() == otree_4.max_depth());
+    CHECK(otree_max.height() == otree_max.max_depth());
+
+
+    CHECK(otree_3.height() != otree_4.height());
+    CHECK(otree_3.height() != otree_max.height());
+    CHECK(otree_4.height() != otree_max.height());
 
 }
+
+// after insert do erase
+
+// after erase do reposition
+
+// after reposition do pruning 

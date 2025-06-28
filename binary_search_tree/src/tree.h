@@ -713,53 +713,45 @@ namespace tree {
 	
 		// same logic but returns the object instead of the o_node 
 		game::Object* find_object(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-	
+		
 		int height(std::unique_ptr<o_node>& tree);
 		size_t size(std::unique_ptr<o_node>& tree);
-	
+		
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 	
 		void check_leaves(std::unique_ptr<o_node>& tree, double delta);
 		
 		void traverse_tree(std::unique_ptr<o_node>& tree);
-	public:
-	// CONSTRUCTORS
+		public:
+		// CONSTRUCTORS
 		~octree() = default;
 		// creates an empty octree with a root o_node
-		octree(game::BoundingBox root_bounds)
-			: root_(std::make_unique<o_node>()), max_depth_(MAX_DEPTH) {
+		octree(game::BoundingBox root_bounds, int depth=MAX_DEPTH)
+		: root_(std::make_unique<o_node>()), max_depth_(depth) {
 			root_->bounds_ = root_bounds;
 			root_->life_ = 0;
 			root_->depth_ = 0;
-	
-		}
-		// creates an octree of the defined depth
-		octree(game::BoundingBox root_bounds, int depth)
-			: root_(std::make_unique<o_node>()), max_depth_(depth) {
-			root_->bounds_ = root_bounds;
-			root_->life_ = 0;
-			root_->depth_ = 0;
-	
+			
 			// build lazily
 		}
 		// creates an empty octree, then populates it with the list of objects
 		template<typename InputIt>
 		octree(game::BoundingBox root_bounds, InputIt first, InputIt last)
-			: octree(root_bounds) { // initialise the root o_node
+		: octree(root_bounds) { // initialise the root o_node
 			for (auto i = first; i != last; ++i) {
 				insert(*i);
 			}
 		}
-	
+		
 		octree(game::BoundingBox root_bounds, std::vector<std::unique_ptr<game::Object>>& objects)
-			: octree(root_bounds, objects.begin(), objects.end()) {
+		: octree(root_bounds, objects.begin(), objects.end()) {
 		}
-	
+		
 		// copy and move overloads
 		octree(const octree& other);
 		octree(octree&& other);
-	
+		
 		octree& operator= (const octree& other);
 		octree& operator=(octree&& other);
 	
@@ -769,7 +761,7 @@ namespace tree {
 		void erase(std::unique_ptr<game::Object>& obj);
 		std::unique_ptr<game::Object> extract(std::unique_ptr<game::Object>& obj);
 		void reposition(std::unique_ptr<game::Object>& obj);
-	
+		
 		std::unique_ptr<o_node>& get_root() {
 			return root_;
 		}
@@ -779,7 +771,10 @@ namespace tree {
 		std::vector<std::unique_ptr<game::Object>>& get_objects() {
 			return root_->objects_;
 		}
-	
+		
+		int max_depth(){
+			return max_depth_;
+		}
 		int height() {
 			return height(root_);
 		}
