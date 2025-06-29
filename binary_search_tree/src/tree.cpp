@@ -12,7 +12,6 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     
     // Create 8 children octants
     // Octant subdivision: Left/Right (x), Bottom/Top (y), Back/Front (z)
-    
     // Left Bottom Back (min corner octant)
     auto lbb = std::make_unique<o_node>();
     lbb->bounds_ = game::BoundingBox{
@@ -21,6 +20,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     lbb->life_ = 0;
     lbb->depth_ = tree->depth_ + 1;
+    lbb->parent_ = tree.get();
     tree->children_.push_back(std::move(lbb));
     
     // Left Bottom Front
@@ -31,6 +31,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     lbf->life_ = 0;
     lbf->depth_ = tree->depth_ + 1;
+    lbf->parent_ = tree.get();
     tree->children_.push_back(std::move(lbf));
     
     // Left Top Back
@@ -41,6 +42,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     ltb->life_ = 0;
     ltb->depth_ = tree->depth_ + 1;
+    ltb->parent_ = tree.get();
     tree->children_.push_back(std::move(ltb));
     
     // Left Top Front
@@ -51,6 +53,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     ltf->life_ = 0;
     ltf->depth_ = tree->depth_ + 1;
+    ltf->parent_ = tree.get();
     tree->children_.push_back(std::move(ltf));
     
     // Right Bottom Back
@@ -61,6 +64,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     rbb->life_ = 0;
     rbb->depth_ = tree->depth_ + 1;
+    rbb->parent_ = tree.get();
     tree->children_.push_back(std::move(rbb));
     
     // Right Bottom Front
@@ -71,6 +75,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     rbf->life_ = 0;
     rbf->depth_ = tree->depth_ + 1;
+    rbf->parent_ = tree.get();
     tree->children_.push_back(std::move(rbf));
     
     // Right Top Back
@@ -81,6 +86,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     rtb->life_ = 0;
     rtb->depth_ = tree->depth_ + 1;
+    rtb->parent_ = tree.get();
     tree->children_.push_back(std::move(rtb));
     
     // Right Top Front (max corner octant)
@@ -91,6 +97,7 @@ void tree::octree::build_children(std::unique_ptr<o_node>& tree){
     };
     rtf->life_ = 0;
     rtf->depth_ = tree->depth_ + 1;
+    rtf->parent_ = tree.get();
     tree->children_.push_back(std::move(rtf));
 }
 
@@ -141,6 +148,23 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
 	}
 }
 
+void tree::octree::insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects){
+    // quite similar logic to before, just goes with a list of objects instead, level by level, less overall
+    // traversal cost than inserting one by one
+
+    //TODO: implement
+    (void) tree;
+    (void) objects;
+    return;
+
+}
+
+std::unique_ptr<game::Object> tree::octree::erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
+    (void) tree;
+    (void) object;
+    return std::unique_ptr<game::Object>();
+}
+
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
     if (!tree) {
         return nullptr;
@@ -164,9 +188,7 @@ game::Object* tree::octree::find_object(std::unique_ptr<o_node>& tree, std::uniq
 
     // Check if object is in current o_node
     for (auto& obj : tree->objects_) {
-        if (obj.get() == object.get()) {  // Compare raw pointers
-            return obj.get();
-        }
+        if(*obj == *object) {return obj.get();}
     }
 
     // Recursively search children
@@ -258,4 +280,36 @@ void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
 		}
 		// print its children
 		return;
+}
+
+
+void tree::octree::update(double delta){
+    // check the lifespan of the node 
+    // update objects within the node, tag ones that have been moved
+    (void) delta;
+    auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};
+    for(auto& obj : root_->objects_){
+        // this depends on obj implementation 
+        /*  if(obj->update(delta) == MOVED){
+                moved_objects.push_back(obj);
+        } */
+        (void) obj;
+    }
+    // reinsert moved objects 
+    for(auto& m_obj : moved_objects){
+        auto current = root_.get();
+        // while the current region does not contain the object, move up a level
+        auto box = m_obj.get()->get_bounding_box();
+        while(not node_contains_object(current->bounds_, box)){
+           current = current->parent_;
+        }
+        // once the parent is found, erase and then reinsert
+        erase(m_obj);
+        //insert(current, m_obj); figure out his
+    }
+    // prune dead objects from the tree
+
+    // then look for collisions
+
+    return;
 }

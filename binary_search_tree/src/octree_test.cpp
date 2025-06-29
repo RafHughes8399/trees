@@ -33,10 +33,10 @@ TEST_CASE("octree insert"){
     // test object takes a position and size vector
     auto test_pos = game::Vector3{0.0, 0.0, 0.0};
     auto test_size = game::Vector3{20.0, 20.0, 20.0};
-    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size);
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
     auto obj_box = test_object->get_bounding_box();
 
-    std::unique_ptr<game::Object> search_object = std::make_unique<game::TestObject>(test_pos, test_size);
+    std::unique_ptr<game::Object> search_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
 
 
     otree.insert(test_object);
@@ -61,7 +61,7 @@ TEST_CASE("insert inspect"){
     auto otree = tree::octree(WORLD_BOX);
     auto test_pos = game::Vector3{0.0, 0.0, 0.0};
     auto test_size = game::Vector3{20.0, 20.0, 20.0};
-    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size);
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
     auto obj_box = test_object->get_bounding_box();
 
     std::cout << "object bounding box " << std::endl;
@@ -85,31 +85,31 @@ TEST_CASE("insert objects into children"){
     auto centre = game::Vector3Add(game::Vector3{-762, -64, -762}, game::Vector3{0, 0 ,0});
     centre = game::Vector3Scale(centre, 0.5);
     auto size = game::Vector3{10, 10, 10};
-    std::unique_ptr<game::Object> lbb = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> lbb = std::make_unique<game::TestObject>(centre, size, 0);
     
     otree.insert(lbb);
     
     centre = game::Vector3Add(game::Vector3{-762, -64, 0}, game::Vector3{0, 0, 762});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> lbf = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> lbf = std::make_unique<game::TestObject>(centre, size, 1);
     
     otree.insert(lbf);
 
     centre = game::Vector3Add(game::Vector3{-762, 0, -762}, game::Vector3{0, 64, 0});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> ltb = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> ltb = std::make_unique<game::TestObject>(centre, size, 2);
     
     otree.insert(ltb);
     
     centre = game::Vector3Add(game::Vector3{-762, 0, 0}, game::Vector3{0, 64, 762});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> ltf = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> ltf = std::make_unique<game::TestObject>(centre, size, 3);
     
     otree.insert(ltf);
     
     centre = game::Vector3Add(game::Vector3{0, -64, -762}, game::Vector3{762, 0, 0});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rbb = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> rbb = std::make_unique<game::TestObject>(centre, size, 4);
     
     otree.insert(rbb);
     
@@ -117,19 +117,19 @@ TEST_CASE("insert objects into children"){
     centre = game::Vector3Add(game::Vector3{0, -64, 0}, game::Vector3{762, 0, 762});
     centre = game::Vector3Scale(centre, 0.5);
     
-    std::unique_ptr<game::Object> rbf = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> rbf = std::make_unique<game::TestObject>(centre, size, 5);
     
     otree.insert(rbf);
     
     centre = game::Vector3Add(game::Vector3{0, 0, -762}, game::Vector3{762, 64, 0});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rtb = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> rtb = std::make_unique<game::TestObject>(centre, size, 6);
     
     otree.insert(rtb);
     
     centre = game::Vector3Add(game::Vector3{0, 0, 0}, game::Vector3{762, 64, 762});
     centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size);
+    std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size, 7);
 
     otree.insert(rtf);
 
@@ -145,15 +145,15 @@ TEST_CASE("insert multiple - same node"){
     // inserting into right top back 
     auto position = game::Vector3{300, 20, -300};
     auto size = game::Vector3{10, 10, 10};
-    std::unique_ptr<game::Object> test_obj = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> test_obj = std::make_unique<game::TestObject>(position, size, 0);
     otree.insert(test_obj);
     
     position = game::Vector3Add(position, game::Vector3{10, -5, 20});
-    std::unique_ptr<game::Object> another_test_obj = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> another_test_obj = std::make_unique<game::TestObject>(position, size, 1);
     otree.insert(another_test_obj);
     
     position = game::Vector3Add(position, game::Vector3{-20, 0, -10});
-    std::unique_ptr<game::Object> and_another_test_obj = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> and_another_test_obj = std::make_unique<game::TestObject>(position, size, 2);
     otree.insert(and_another_test_obj);
     
     CHECK(otree.size() == 3);
@@ -171,7 +171,7 @@ TEST_CASE("insert multiple - different nodes"){
         auto z = std::experimental::randint(int(WORLD_MIN.z), int(WORLD_MAX.z));
 
         position = game::Vector3{float(x), float(y),float(z)};
-        std::unique_ptr<game::Object> obj = std::make_unique<game::TestObject>(position, size);
+        std::unique_ptr<game::Object> obj = std::make_unique<game::TestObject>(position, size, i);
         otree.insert(obj);
     }
     CHECK(otree.size() == 23);
@@ -188,9 +188,9 @@ TEST_CASE("insert to max depth"){
     auto position = game::Vector3{5, 3, 5};
     auto size = game::Vector3{0.5, 0.5, 0.5};
 
-    std::unique_ptr<game::Object> obj_3 = std::make_unique<game::TestObject>(position, size);
-    std::unique_ptr<game::Object> obj_4 = std::make_unique<game::TestObject>(position, size);
-    std::unique_ptr<game::Object> obj_5 = std::make_unique<game::TestObject>(position, size);
+    std::unique_ptr<game::Object> obj_3 = std::make_unique<game::TestObject>(position, size, 0);
+    std::unique_ptr<game::Object> obj_4 = std::make_unique<game::TestObject>(position, size, 0);
+    std::unique_ptr<game::Object> obj_5 = std::make_unique<game::TestObject>(position, size, 0);
     
     otree_3.insert(obj_3);
     otree_4.insert(obj_4);

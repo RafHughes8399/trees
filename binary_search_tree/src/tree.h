@@ -50,18 +50,19 @@ namespace game{
 	class Object {
 		public:
 			virtual ~Object() = default;
-			Object(Vector3 position, Vector3 size)
-				: position_(position), size_(size){
+			Object(Vector3 position, Vector3 size, int id)
+				: position_(position), size_(size), id_(id){
 				// generate the bounding box, min and max
 				bounding_box_ = BoundingBox{ Vector3{position_.x - (size_.x / 2), position_.y - (size_.y / 2), position_.z - (size_.z / 2)},
 					Vector3{position_.x + (size_.x / 2), position_.y + (size_.y / 2), position_.z + (size_.z / 2)} };			
 				};
 			Object(const Object& other)
-				:  position_(other.position_), size_(other.size_), bounding_box_(other.bounding_box_){
+				:  position_(other.position_), size_(other.size_), bounding_box_(other.bounding_box_), id_(other.id_){
 			};
 		
 			Object(Object&& other)
-				: position_(std::move(other.position_)), size_(std::move(other.size_)), bounding_box_(std::move(other.bounding_box_)) {
+				: position_(std::move(other.position_)), size_(std::move(other.size_)), bounding_box_(std::move(other.bounding_box_)),
+				id_(std::move(other.id_)) {
 			};
 
 			BoundingBox get_bounding_box(){
@@ -81,13 +82,14 @@ namespace game{
 			Vector3 position_;
 			Vector3 size_;
 			BoundingBox bounding_box_;
+			int id_;
 		};
 		
 	class TestObject : public Object {
 	public:
 		~TestObject() override = default;
-		TestObject(game::Vector3 position, game::Vector3 size)
-		: Object(position, size){
+		TestObject(game::Vector3 position, game::Vector3 size, int id)
+		: Object(position, size, id){
 		};
 		TestObject(const TestObject& other)
 			: Object(other){
@@ -100,9 +102,8 @@ namespace game{
 			auto* other_test = dynamic_cast<const TestObject*>(&other);
 			if (!other_test) return false;
 			
-			return game::Vector3Equal(position_, other_test->position_) and Vector3Equal(
-				size_, other_test->size_) and BoundingBoxEqual(bounding_box_, other_test->bounding_box_);
-			}
+			return id_ == other_test->id_;
+		}
 	};	
 }
 
@@ -685,6 +686,7 @@ namespace tree {
 			game::BoundingBox bounds_;
 			int depth_;
 			short life_; // how long a o_node has lived without any objects
+			o_node* parent_;
 		};
 	
 		private:
@@ -700,17 +702,13 @@ namespace tree {
 		void build_children(std::unique_ptr<o_node>& tree);
 
 		// insert an object into the tree
-		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-		void erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+
 
 		// reposition an Object within the tree after it moves
-		std::unique_ptr<game::Object> extract(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-		void reposition(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-
-
+		
 		// get the o_node the object is located in 
 		o_node* find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-	
+		
 		// same logic but returns the object instead of the o_node 
 		game::Object* find_object(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		
@@ -719,7 +717,7 @@ namespace tree {
 		
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
-	
+		
 		void check_leaves(std::unique_ptr<o_node>& tree, double delta);
 		
 		void traverse_tree(std::unique_ptr<o_node>& tree);
@@ -732,7 +730,7 @@ namespace tree {
 			root_->bounds_ = root_bounds;
 			root_->life_ = 0;
 			root_->depth_ = 0;
-			
+			root_->parent_ = nullptr;
 			// build lazily
 		}
 		// creates an empty octree, then populates it with the list of objects
@@ -754,14 +752,23 @@ namespace tree {
 		
 		octree& operator= (const octree& other);
 		octree& operator=(octree&& other);
-	
+		
+		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
+		std::unique_ptr<game::Object> erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		
+		void insert(std::vector<std::unique_ptr<game::Object>>& objs){
+			insert(root_, objs);
+
+		}
 		void insert(std::unique_ptr<game::Object>& obj) {
 			insert(root_, obj);
 		}
-		void erase(std::unique_ptr<game::Object>& obj);
-		std::unique_ptr<game::Object> extract(std::unique_ptr<game::Object>& obj);
-		void reposition(std::unique_ptr<game::Object>& obj);
-		
+		void erase(std::unique_ptr<game::Object>& obj){
+			erase(root_, obj);
+		}
+	
+		void update(double delta);
 		std::unique_ptr<o_node>& get_root() {
 			return root_;
 		}
@@ -781,27 +788,27 @@ namespace tree {
 		size_t size() {
 			return size(root_);
 		}
-	
+		
 		bool is_leaf() {
 			return is_leaf(root_);
 		}
 		bool is_empty() {
 			return is_empty(root_);
 		}
-	
+		
 		// checks leaves for their life, prunes if need be
 		void check_leaves(double delta) {
 			check_leaves(root_, delta);
 		}
-	
+		
 		o_node* find_object_node(std::unique_ptr<game::Object>& obj) {
 			return find_object_node(root_, obj);
 		}
-	
+		
 		game::Object* find_object(std::unique_ptr<game::Object>& obj) {
 			return find_object(root_, obj);
 		}
-	
+		
 		// for testing purposes 
 		bool object_in_node(game::BoundingBox& node, game::BoundingBox& obj) {
 			return node_contains_object(node, obj);
