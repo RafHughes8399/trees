@@ -308,7 +308,13 @@ void tree::octree::update(double delta){
 
     // prune dead objects from the tree
     prune_leaves(delta);
-    // then look for collisions
+    // then look for collisions within the node, placeholder for now
+    // read the blog for a better implementation 
+    for(auto i = root_->objects_.begin(); i != root_->objects_.end(); ++i){
+        for(auto j = i + 1;  j != root_->objects_.end(); ++j){
 
+
+        }
+    }
     return;
 }
