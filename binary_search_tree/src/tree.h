@@ -673,11 +673,11 @@ namespace tree {
 		}
 	};
 
-
 	#define NODE_LIFETIME 30 // seconds
 	#define MAX_DEPTH 5 // max height of the tree 
+	#define CHILDREN 8
 
-	class octree {
+ 	class octree {
 	protected:
 		// node definition
 		struct o_node {
@@ -687,8 +687,13 @@ namespace tree {
 			int depth_;
 			short life_; // how long a o_node has lived without any objects
 			o_node* parent_;
+		
+			friend bool operator==(const o_node& a, const o_node& b) {
+				return game::Vector3Equal(a.bounds_.min, b.bounds_.min) and 
+				game::Vector3Equal(a.bounds_.max, b.bounds_.max);
+			}
 		};
-	
+
 		private:
 		std::unique_ptr<o_node> root_;
 		int max_depth_;
@@ -696,10 +701,12 @@ namespace tree {
 	
 	
 		// checks if an object is contained within a o_node's bounding box
+
 		bool node_contains_object(game::BoundingBox& node, game::BoundingBox& object);
-		bool object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object);
+		int object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object);
 		// build the children of a leaf node in the tree
-		void build_children(std::unique_ptr<o_node>& tree);
+		bool is_child_built(std::unique_ptr<o_node>& tree, std::unique_ptr<o_node>& child);
+		void build_child(std::unique_ptr<o_node>& tree, int child_to_build);
 
 		// insert an object into the tree
 
@@ -718,7 +725,7 @@ namespace tree {
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 		
-		void check_leaves(std::unique_ptr<o_node>& tree, double delta);
+		void prune_leaves(std::unique_ptr<o_node>& tree, double delta);
 		
 		void traverse_tree(std::unique_ptr<o_node>& tree);
 		public:
@@ -797,8 +804,8 @@ namespace tree {
 		}
 		
 		// checks leaves for their life, prunes if need be
-		void check_leaves(double delta) {
-			check_leaves(root_, delta);
+		void prune_leaves(double delta) {
+			prune_leaves(root_, delta);
 		}
 		
 		o_node* find_object_node(std::unique_ptr<game::Object>& obj) {
