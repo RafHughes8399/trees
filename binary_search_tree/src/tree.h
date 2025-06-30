@@ -686,7 +686,7 @@ namespace tree {
 			game::BoundingBox bounds_;
 			int depth_;
 			short life_; // how long a o_node has lived without any objects
-			o_node* parent_;
+			std::unique_ptr<o_node>* parent_;
 		
 			friend bool operator==(const o_node& a, const o_node& b) {
 				return game::Vector3Equal(a.bounds_.min, b.bounds_.min) and 
@@ -695,39 +695,46 @@ namespace tree {
 		};
 
 		private:
+
+		// members 
 		std::unique_ptr<o_node> root_;
 		int max_depth_;
+
+
 		// methods
-	
-	
-		// checks if an object is contained within a o_node's bounding box
+
+		// containment checks
 
 		bool node_contains_object(game::BoundingBox& node, game::BoundingBox& object);
 		int object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object);
-		// build the children of a leaf node in the tree
+
+		// child node construction
 		bool is_child_built(std::unique_ptr<o_node>& tree, std::unique_ptr<o_node>& child);
 		void build_child(std::unique_ptr<o_node>& tree, int child_to_build);
 
-		// insert an object into the tree
-
-
-		// reposition an Object within the tree after it moves
+		// object insert and erase
+		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
+		std::unique_ptr<game::Object> erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		
-		// get the o_node the object is located in 
+
+		// object lookup
 		o_node* find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-		
-		// same logic but returns the object instead of the o_node 
 		game::Object* find_object(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		
+		// height, size and traversal
 		int height(std::unique_ptr<o_node>& tree);
 		size_t size(std::unique_ptr<o_node>& tree);
+		void traverse_tree(std::unique_ptr<o_node>& tree);
 		
+
+		// tree characteristics
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 		
+		// leaf pruning
 		void prune_leaves(std::unique_ptr<o_node>& tree, double delta);
 		
-		void traverse_tree(std::unique_ptr<o_node>& tree);
 		public:
 		// CONSTRUCTORS
 		~octree() = default;
@@ -760,13 +767,10 @@ namespace tree {
 		octree& operator= (const octree& other);
 		octree& operator=(octree&& other);
 		
-		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
-		std::unique_ptr<game::Object> erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
-		
+		// insert and erase 
 		void insert(std::vector<std::unique_ptr<game::Object>>& objs){
 			insert(root_, objs);
-
+			
 		}
 		void insert(std::unique_ptr<game::Object>& obj) {
 			insert(root_, obj);
@@ -774,11 +778,24 @@ namespace tree {
 		void erase(std::unique_ptr<game::Object>& obj){
 			erase(root_, obj);
 		}
+
+		// object lookup
+		o_node* find_object_node(std::unique_ptr<game::Object>& obj) {
+			return find_object_node(root_, obj);
+		}
+		
+		game::Object* find_object(std::unique_ptr<game::Object>& obj) {
+			return find_object(root_, obj);
+		}
+		
 	
+		// update 
 		void update(double delta);
 		std::unique_ptr<o_node>& get_root() {
 			return root_;
 		}
+
+		// accessors
 		std::vector<std::unique_ptr<o_node>>& get_children() {
 			return root_->children_;
 		}
@@ -789,6 +806,8 @@ namespace tree {
 		int max_depth(){
 			return max_depth_;
 		}
+
+		// height and size
 		int height() {
 			return height(root_);
 		}
@@ -796,6 +815,7 @@ namespace tree {
 			return size(root_);
 		}
 		
+		// tree properties
 		bool is_leaf() {
 			return is_leaf(root_);
 		}
@@ -806,14 +826,6 @@ namespace tree {
 		// checks leaves for their life, prunes if need be
 		void prune_leaves(double delta) {
 			prune_leaves(root_, delta);
-		}
-		
-		o_node* find_object_node(std::unique_ptr<game::Object>& obj) {
-			return find_object_node(root_, obj);
-		}
-		
-		game::Object* find_object(std::unique_ptr<game::Object>& obj) {
-			return find_object(root_, obj);
 		}
 		
 		// for testing purposes 

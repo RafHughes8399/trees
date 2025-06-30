@@ -19,7 +19,7 @@ void tree::octree::build_child(std::unique_ptr<o_node>& tree, int child_to_build
     auto child = std::make_unique<o_node>();
     child->depth_ = tree->depth_ + 1;
     child->life_ = 0;
-    child->parent_ = tree.get();
+    child->parent_ = &tree;
     switch (child_to_build)
     {
     case 0:
@@ -295,15 +295,16 @@ void tree::octree::update(double delta){
     }
     // reinsert moved objects 
     for(auto& m_obj : moved_objects){
-        auto current = root_.get();
+        auto current = &root_;
         // while the current region does not contain the object, move up a level
         auto box = m_obj.get()->get_bounding_box();
-        while(not node_contains_object(current->bounds_, box)){
-           current = current->parent_;
+        
+        while(not node_contains_object((*current)->bounds_, box)){
+           current = (*current)->parent_;
         }
-        // once the parent is found, erase and then reinsert
+        // once the parent is found, erase and then reinsert the object into it
         erase(m_obj);
-        //insert(current, m_obj.get()); figure out his
+        insert(*current, m_obj.get());
     }
 
     // prune dead objects from the tree
