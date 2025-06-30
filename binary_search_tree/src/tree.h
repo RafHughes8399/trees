@@ -674,7 +674,7 @@ namespace tree {
 	};
 
 	#define NODE_LIFETIME 30 // seconds
-	#define MAX_DEPTH 5 // max height of the tree 
+	#define MAX_DEPTH 7 // max height of the tree 
 	#define CHILDREN 8
 
  	class octree {
@@ -715,7 +715,7 @@ namespace tree {
 		// object insert and erase
 		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
-		std::unique_ptr<game::Object> erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		
 
 		// object lookup

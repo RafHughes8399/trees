@@ -150,6 +150,7 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
                 return;
 			}
 		}
+        // recursively iterate through the children
 	    for (auto& child : tree->children_) {
 		// if does fit in a child, recursively insert
             if (node_contains_object(child->bounds_, object_bounds)) {
@@ -157,6 +158,7 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
                 return;
             }
 		}
+        // if this point is reached, there are no children that the object can fit into so insert into the node
         tree->objects_.push_back(std::move(object));
 	}
 }
@@ -172,21 +174,37 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::vector<std::unique
 
 }
 
-std::unique_ptr<game::Object> tree::octree::erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
-    (void) tree;
-    (void) object;
-    return std::unique_ptr<game::Object>();
+void tree::octree::erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
+    if(not tree){
+        return;
+    }
+    for(auto i = tree->objects_.begin(); i != tree->objects_.end();){
+        if(*(i->get()) == *object){
+            i = tree->objects_.erase(i);
+            return;
+        }
+        else{
+            ++i;
+        }
+
+    }
+    for(auto& child : tree->children_){
+        erase(child, object);
+    }
+    return;
 }
 
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
     if (!tree) {
         return nullptr;
     }
+    // iterate through the objects in the node, if equal, return a pointer to the node
     for (auto& obj : tree->objects_) {
         if (*obj == *object) {
             return tree.get();
         }
     }
+    // recurse through the children of the node
     for (auto& child : tree->children_) {
         auto result =  find_object_node(child, object);
         if (result != nullptr) {
@@ -220,6 +238,7 @@ int tree::octree::height(std::unique_ptr<o_node>& tree) {
         return -1;
     }
     else {
+
         int max_child_height = -1;
         for (auto& child : tree->children_) {
             int child_height = height(child);
@@ -305,7 +324,8 @@ void tree::octree::update(double delta){
     // check the lifespan of the node 
     // update objects within the node, tag ones that have been moved
     (void) delta;
-    auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};
+
+    auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};     // for now is empty, pending game implementation
     for(auto& obj : root_->objects_){
         // this depends on obj implementation 
         /*  if(obj->update(delta) == MOVED){

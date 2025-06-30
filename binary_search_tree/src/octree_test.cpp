@@ -199,7 +199,7 @@ TEST_CASE("insert to max depth"){
     auto otree_4 = tree::octree(WORLD_BOX, 4);
     auto otree_max = tree::octree(WORLD_BOX);
 
-    auto position = game::Vector3{5, 3, 5};
+    auto position = game::Vector3{5, 1.5, 5};
     auto size = game::Vector3{0.5, 0.5, 0.5};
 
     std::unique_ptr<game::Object> obj_3 = std::make_unique<game::TestObject>(position, size, 0);
@@ -225,6 +225,7 @@ TEST_CASE("insert to max depth"){
     CHECK(otree_3.height() != otree_4.height());
     CHECK(otree_3.height() != otree_max.height());
     CHECK(otree_4.height() != otree_max.height());
+    otree_max.traverse_tree(); // examine what the "smallest" bounding box is
 
 }
 TEST_CASE("insert and erase object"){
@@ -247,7 +248,38 @@ TEST_CASE("erase a whole node"){
     // clear all objects from a node
 }
 
-TEST_CASE("pruning leaves"){
+TEST_CASE("pruning leaves, simple"){
+    auto octree = tree::octree(WORLD_BOX);
+
+    auto position = game::Vector3{300, 20, -300};
+    auto size = game::Vector3{10, 10, 10};
+    std::unique_ptr<game::Object> test_obj = std::make_unique<game::TestObject>(position, size, 0);
+    std::unique_ptr<game::Object> copy_obj = std::make_unique<game::TestObject>(position, size, 0);
+
+    // simple case, root -> 1 child,
+    octree.insert(test_obj);
+    // make the child a leaf node,
+    octree.update(1);
+    CHECK(octree.size() == 1);
+    octree.erase(copy_obj); // pending erase 
+    CHECK(octree.size() == 0);
+    // wait for it to be pruned
+    CHECK(octree.height() == 1);
+    for(auto i = 0; i <= NODE_LIFETIME; ++i){
+        octree.update(1);
+    }
+    // the leaf should be pruned, no longer in the tree
+    CHECK(octree.height() == 0);
+
+
+
+}
+TEST_CASE("pruning leaves, multiple"){
+
+
+}
+
+TEST_CASE("pruning leaves, deeper"){
 
 
 }
