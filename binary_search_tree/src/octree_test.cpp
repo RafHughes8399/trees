@@ -228,12 +228,14 @@ TEST_CASE("insert to max depth"){
 
 }
 TEST_CASE("insert and erase object"){
+    // insert an object
 
+    // then erase it from the tree
 
 }
 
 TEST_CASE("erase object not in tree"){
-
+    // attempt to erase an object not in the tree
 
 }
 
@@ -242,6 +244,10 @@ TEST_CASE("insert multiple erase some"){
 }
 
 TEST_CASE("erase a whole node"){
+    // clear all objects from a node
+}
+
+TEST_CASE("pruning leaves"){
 
 
 }

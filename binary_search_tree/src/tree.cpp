@@ -1,10 +1,75 @@
 #include "tree.h"
 
 
+
+// containment checks
+
+
 bool tree::octree::node_contains_object(game::BoundingBox& node, game::BoundingBox& object){
-	return (object.min.x > node.min.x and object.min.y > node.min.y and object.min.z > node.min.z)
-		and (object.max.x < node.max.x and object.max.y < node.max.y and object.max.z < node.max.z);
+    // compare the bounding box of the node and the object
+    return (object.min.x > node.min.x and object.min.y > node.min.y and object.min.z > node.min.z)
+    and (object.max.x < node.max.x and object.max.y < node.max.y and object.max.z < node.max.z);
 }
+// return the child "index" that the object can fit into, if -1 then no child can fit the object
+int tree::octree::object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object){
+    // check if the object will fit into potential children of the node 
+    auto centre = game::Vector3Add(node.max, node.min);
+    centre = game::Vector3Scale(centre, 0.5f);
+
+    // first check if the object crosses the centre of any axis, if it does then no child will fit it
+    bool crosses_centre = (object.min.x < centre.x and centre.x < object.max.x) 
+    or (object.min.y < centre.y and centre.y < object.max.y) 
+    or (object.min.z < centre.z and centre.z < object.max.z);
+    
+    if(crosses_centre) {return -1;}
+
+    // setup the bounding boxes for the potential children
+    auto children = std::vector<game::BoundingBox>{};
+    // 0
+    children.push_back(
+        game::BoundingBox{node.min, centre}
+    );
+    // 1
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x,node.min.y, centre.z},  game::Vector3{centre.x, centre.y, node.max.z}}
+    );
+    // 2
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x, centre.y, node.min.z},  game::Vector3{centre.x, node.max.y, centre.z}}
+    );
+    // 3
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x, centre.y, centre.z},  game::Vector3{centre.x, node.max.y, node.max.z}}
+    );
+    // 4
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, node.min.y, node.min.z},  game::Vector3{node.max.x, centre.y, centre.z}}
+    );
+    //5
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, node.min.y, centre.z},  game::Vector3{node.max.x, centre.y, node.max.z}}
+    );
+    //6
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, centre.y, node.min.z},  game::Vector3{node.max.x, node.max.y, centre.z}}
+    );
+    //7
+    children.push_back(
+        game::BoundingBox{centre, node.max}
+    );
+
+    // otherwise, check which child will fit the object
+    for(size_t i = 0; i < CHILDREN; ++i){
+        // check the child that will contain the object
+        auto child_node = children.at(i);
+        if(node_contains_object(child_node, object)){
+            // return the "index" of the child that will fit the node
+            return int(i);
+        }
+    }
+    return -1;
+}
+// child construction 
 bool tree::octree::is_child_built(std::unique_ptr<o_node>& tree, std::unique_ptr<o_node>& child){
     for(auto& c : tree->children_){
         if(*c == *child){return true;}
@@ -16,10 +81,13 @@ void tree::octree::build_child(std::unique_ptr<o_node>& tree, int child_to_build
     auto centre = game::Vector3Add(tree->bounds_.max, tree->bounds_.min);
     centre = game::Vector3Scale(centre, 0.5f);
 
+    // create the child
     auto child = std::make_unique<o_node>();
     child->depth_ = tree->depth_ + 1;
     child->life_ = 0;
     child->parent_ = &tree;
+
+    // based on the "index" order used ni the method above to select the appropraite bounding box for the child
     switch (child_to_build)
     {
     case 0:
@@ -49,70 +117,22 @@ void tree::octree::build_child(std::unique_ptr<o_node>& tree, int child_to_build
     default:
         break;
     }
-    // check if child_to_build has been built, if not build it 
+
+    // if the child has not been built, build it
     if(not is_child_built(tree, child)){
         tree->children_.push_back(std::move(child));
     }
-    // Create 8 children octants
-    // Octant subdivision: Left/Right (x), Bottom/Top (y), Back/Front (z)
-    // Left Bottom Back (min corner octan
 }
 
-int tree::octree::object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object){
-
-	// check if the object will fit into potential children of the node 
-	auto centre = game::Vector3Add(node.max, node.min);
-	centre = game::Vector3Scale(centre, 0.5f);
-    // first check if the object crosses the centre of any axis, if it does then no child will fit it
-    bool crosses_centre = (object.min.x < centre.x and centre.x < object.max.x) 
-    or (object.min.y < centre.y and centre.y < object.max.y) 
-    or (object.min.z < centre.z and centre.z < object.max.z);
-    
-    if(crosses_centre) {return -1;}
-
-    auto children = std::vector<game::BoundingBox>{};
-    children.push_back(
-        game::BoundingBox{node.min, centre}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x,node.min.y, centre.z},  game::Vector3{centre.x, centre.y, node.max.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x, centre.y, node.min.z},  game::Vector3{centre.x, node.max.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x, centre.y, centre.z},  game::Vector3{centre.x, node.max.y, node.max.z}}
-    );
-
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, node.min.y, node.min.z},  game::Vector3{node.max.x, centre.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, node.min.y, centre.z},  game::Vector3{node.max.x, centre.y, node.max.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, centre.y, node.min.z},  game::Vector3{node.max.x, node.max.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{centre, node.max}
-    );
-
-	// otherwise, check which child will fit the object
-    for(size_t i = 0; i < CHILDREN; ++i){
-        // check the child that will contain the object
-        auto child_node = children.at(i);
-        if(node_contains_object(child_node, object)){
-            return int(i);
-        }
-    }
-    return -1;
-}
-// amend such that it only creates the children if necessary
+// insertion
 void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
 	auto object_bounds = object->get_bounding_box();
+    // check if the node contains the object, if not then immediately return
 	if(not node_contains_object(tree->bounds_, object_bounds)){ return; }
-	else{
-		if(tree->depth_ == max_depth_){
+	
+    else{
+        // if at the max depth then insert, no further children can be constructed
+        if(tree->depth_ == max_depth_){
 			tree->objects_.push_back(std::move(object));
 			return;
 		}
@@ -125,7 +145,7 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
                     build_child(tree, child_to_build);
             }
 			else{
-				// if the object will not fit into a child, insert into the node without making the children
+				// if no child need be built, then insert into the node
 				tree->objects_.push_back(std::move(object));
                 return;
 			}
