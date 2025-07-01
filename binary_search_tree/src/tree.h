@@ -725,6 +725,7 @@ namespace tree {
 		// height, size and traversal
 		int height(std::unique_ptr<o_node>& tree);
 		size_t size(std::unique_ptr<o_node>& tree);
+		size_t num_nodes(std::unique_ptr<o_node>& tree);
 		void traverse_tree(std::unique_ptr<o_node>& tree);
 		
 
@@ -813,6 +814,9 @@ namespace tree {
 		}
 		size_t size() {
 			return size(root_);
+		}
+		size_t num_nodes(){
+			return num_nodes(root_);
 		}
 		
 		// tree properties

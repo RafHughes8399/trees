@@ -104,7 +104,7 @@ TEST_CASE("tree insertion init list int") {
 
 		// as of 13/06, tree balancing works so
 		CHECK(tree_it.size() == size_t(std::distance(nums.begin(), nums.end())));
-		CHECK(tree_it.height() == tree_it.size() / 2);
+		CHECK(tree_it.height() == int(tree_it.size() / 2));
 	}
 	SECTION("init list has duplicates") {
 	
