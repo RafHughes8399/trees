@@ -701,7 +701,7 @@ namespace tree {
 		// members 
 		std::unique_ptr<o_node> root_;
 		int max_depth_;
-
+		size_t next_id_;
 
 		// methods
 
@@ -724,6 +724,12 @@ namespace tree {
 		o_node* find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		game::Object* find_object(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		
+		// TODO: object retrieval
+		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(std::unique_ptr<o_node>& tree);
+		
+		template<class UnaryPred>
+		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(std::unique_ptr<o_node>& tree, UnaryPred p);
+		
 		// height, size and traversal
 		int height(std::unique_ptr<o_node>& tree);
 		size_t size(std::unique_ptr<o_node>& tree);
@@ -735,7 +741,7 @@ namespace tree {
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 		
-		// leaf pruning
+		// TODO: leaf pruning
 		void prune_leaves(std::unique_ptr<o_node>& tree, double delta);
 		
 		public:
@@ -743,7 +749,7 @@ namespace tree {
 		~octree() = default;
 		// creates an empty octree with a root o_node
 		octree(game::BoundingBox root_bounds, int depth=MAX_DEPTH)
-		: root_(std::make_unique<o_node>()), max_depth_(depth) {
+		: root_(std::make_unique<o_node>()), max_depth_(depth), next_id_(0) {
 			root_->bounds_ = root_bounds;
 			root_->life_ = 0;
 			root_->depth_ = 0;
@@ -777,6 +783,8 @@ namespace tree {
 		}
 		void insert(std::unique_ptr<game::Object>& obj) {
 			insert(root_, obj);
+			next_id_ += 1;
+
 		}
 		void erase(size_t id){
 			erase(root_, id);
@@ -804,6 +812,9 @@ namespace tree {
 		}
 		std::vector<std::unique_ptr<game::Object>>& get_objects() {
 			return root_->objects_;
+		}
+		size_t get_next_id(){
+			return next_id_;
 		}
 		
 		int max_depth(){

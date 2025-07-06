@@ -234,11 +234,13 @@ TEST_CASE("num nodes, just root"){
     // insert a node, into root lbf 
     auto position = game::Vector3{380.5,31, 380.5};
     auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
     std::unique_ptr<game::Object> root_rtf  = std::make_unique<game::TestObject>(
-        position, size, octree.size()
+        position, size, octree.get_next_id()
     );
     // it has to cross the centre of rtf on at least one axis
     octree.insert(root_rtf);
+    CHECK(octree.get_next_id() == 1);
     octree.traverse_tree();
     CHECK(octree.num_nodes() == 2);
     CHECK(octree.height() == 1);
@@ -253,25 +255,29 @@ TEST_CASE("num nodes, several child from root"){
     // insert a node, into root lbf 
     auto position = game::Vector3{380.5,31, 380.5};
     auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
     std::unique_ptr<game::Object> root_rtf  = std::make_unique<game::TestObject>(
-        position, size, octree.size()
+        position, size, octree.get_next_id()
     );
     octree.insert(root_rtf);
+    CHECK(octree.get_next_id() == 1);
     CHECK(octree.num_nodes() == 2);
     
     position = {-380.5, -31, -380.5};
     std::unique_ptr<game::Object> root_lbb  = std::make_unique<game::TestObject>(
-        position, size, octree.size()
+        position, size, octree.get_next_id()
     );
     
     octree.insert(root_lbb);
+    CHECK(octree.get_next_id() == 2);
     CHECK(octree.num_nodes() == 3);
-
+    
     position = {380.5, -31, 380.5};
     std::unique_ptr<game::Object> root_rbf  = std::make_unique<game::TestObject>(
-        position, size, octree.size()
+        position, size, octree.get_next_id()
     );
     octree.insert(root_rbf);
+    CHECK(octree.get_next_id() == 3);
     CHECK(octree.num_nodes() == 4);
 
     CHECK(octree.size() == 3);
@@ -283,10 +289,12 @@ TEST_CASE("insert and erase object, single"){
     auto octree = tree::octree(WORLD_BOX);
     auto position = game::Vector3{400,2, 200};
     auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
     std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
-        position, size, octree.size()
+        position, size, octree.get_next_id()
     );
     octree.insert(object);
+    CHECK(octree.get_next_id() == 1);
     CHECK(octree.size() == 1);
     // then erase it from the tree
     octree.erase(0);
@@ -298,7 +306,7 @@ TEST_CASE("erase object not in tree"){
 
 }
 
-TEST_CASE("erase, id management"){
+TEST_CASE("erase obejcts and id management, avoid duplicate id"){
 
 }
 

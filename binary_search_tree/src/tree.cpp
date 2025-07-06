@@ -202,6 +202,8 @@ void tree::octree::erase(std::unique_ptr<o_node>& tree, size_t object_id){
     }
 }
 
+// object lookup
+
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
     if (!tree) {
         return nullptr;
@@ -237,6 +239,7 @@ game::Object* tree::octree::find_object(std::unique_ptr<o_node>& tree, std::uniq
 
     return nullptr;  // Not found
 }
+
 
 int tree::octree::height(std::unique_ptr<o_node>& tree) {
     if (!tree) {
