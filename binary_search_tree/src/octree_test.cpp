@@ -278,15 +278,19 @@ TEST_CASE("num nodes, several child from root"){
     CHECK(octree.height() == 1);
     CHECK(octree.get_children().size() == 3);
 }
-TEST_CASE("num nodes, deeper tree"){
-
-
-}
 TEST_CASE("insert and erase object, single"){
     // insert an object
-
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{400,2, 200};
+    auto size = game::Vector3{1, 1, 1};
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+        position, size, octree.size()
+    );
+    octree.insert(object);
+    CHECK(octree.size() == 1);
     // then erase it from the tree
-
+    octree.erase(0);
+    CHECK(octree.size() == 0);
 }
 
 TEST_CASE("erase object not in tree"){
@@ -294,7 +298,7 @@ TEST_CASE("erase object not in tree"){
 
 }
 
-TEST_CASE("insert multiple erase some"){
+TEST_CASE("erase, id management"){
 
 }
 

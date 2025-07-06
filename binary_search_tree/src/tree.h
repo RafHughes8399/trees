@@ -50,7 +50,7 @@ namespace game{
 	class Object {
 		public:
 			virtual ~Object() = default;
-			Object(Vector3 position, Vector3 size, int id)
+			Object(Vector3 position, Vector3 size, size_t id)
 				: position_(position), size_(size), id_(id){
 				// generate the bounding box, min and max
 				bounding_box_ = BoundingBox{ Vector3{position_.x - (size_.x / 2), position_.y - (size_.y / 2), position_.z - (size_.z / 2)},
@@ -68,7 +68,9 @@ namespace game{
 			BoundingBox get_bounding_box(){
 				return bounding_box_;
 			}
-			
+			size_t get_id(){
+				return id_;
+			}
     		virtual bool operator==(const Object& other) const = 0;  // Make it const and pure virtual
 			inline void print_object(){
 				
@@ -82,13 +84,13 @@ namespace game{
 			Vector3 position_;
 			Vector3 size_;
 			BoundingBox bounding_box_;
-			int id_;
+			size_t id_;
 		};
 		
 	class TestObject : public Object {
 	public:
 		~TestObject() override = default;
-		TestObject(game::Vector3 position, game::Vector3 size, int id)
+		TestObject(game::Vector3 position, game::Vector3 size, size_t id)
 		: Object(position, size, id){
 		};
 		TestObject(const TestObject& other)
@@ -715,7 +717,7 @@ namespace tree {
 		// object insert and erase
 		void insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
 		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
-		void erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
+		void erase(std::unique_ptr<o_node>& tree, size_t object_id);
 		
 
 		// object lookup
@@ -776,8 +778,8 @@ namespace tree {
 		void insert(std::unique_ptr<game::Object>& obj) {
 			insert(root_, obj);
 		}
-		void erase(std::unique_ptr<game::Object>& obj){
-			erase(root_, obj);
+		void erase(size_t id){
+			erase(root_, id);
 		}
 
 		// object lookup

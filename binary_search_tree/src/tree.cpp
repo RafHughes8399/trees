@@ -174,22 +174,32 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::vector<std::unique
 
 }
 
-void tree::octree::erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
+void tree::octree::erase(std::unique_ptr<o_node>& tree, size_t object_id){
     if(not tree){
         return;
     } 
-    auto object_ptr = object.get();
-    auto it = tree->objects_.erase(std::remove_if(tree->objects_.begin(), tree->objects_.end(),
-        [object_ptr](auto& obj) -> bool{
-            return (*object_ptr) == *obj;
-        }));
-    if(it != tree->objects_.end()){
-
+    std::cout << "erase " << std::endl;
+    auto new_end = std::remove_if(tree->objects_.begin(), tree->objects_.end(),
+        [object_id](auto& obj) -> bool{
+            std::cout << "checking object " << obj->get_id() << std::endl;
+            if(object_id == obj->get_id()){
+                std::cout << "remove" << std::endl;
+                return true;
+            }
+            return false;
+        });
+    // if nothing is to be erased, then check the children
+    if(new_end == tree->objects_.end()){
         for(auto& child : tree->children_){
-            erase(child, object);
+            erase(child, object_id);
         }
+
     }
-    return;
+    // an object is to be removed
+    else{
+        tree->objects_.erase(new_end, tree->objects_.end());
+        return;
+    }
 }
 
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
@@ -364,7 +374,7 @@ void tree::octree::update(double delta){
         game::print_box(current->get()->bounds_);  
 
         std::cout << "erase and reinsert" << std::endl;
-        erase(m_obj);
+        //erase(m_obj.get());
         insert(*current, m_obj.get());
     }
 
