@@ -719,6 +719,7 @@ namespace tree {
 		void insert(std::unique_ptr<o_node>& tree, std::vector<std::unique_ptr<game::Object>>& objects);
 		void erase(std::unique_ptr<o_node>& tree, size_t object_id);
 		
+		void clear(std::unique_ptr<o_node>& tree);
 
 		// object lookup
 		o_node* find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object);
@@ -788,6 +789,9 @@ namespace tree {
 		}
 		void erase(size_t id){
 			erase(root_, id);
+		}
+		void clear(){
+			clear(root_);
 		}
 
 		// object lookup

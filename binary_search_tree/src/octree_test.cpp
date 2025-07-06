@@ -299,21 +299,92 @@ TEST_CASE("insert and erase object, single"){
     // then erase it from the tree
     octree.erase(0);
     CHECK(octree.size() == 0);
+    // so i remove 0 
+    CHECK(octree.get_next_id() == 1);
 }
 
 TEST_CASE("erase object not in tree"){
     // attempt to erase an object not in the tree
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{400,2, 200};
+    auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    CHECK(octree.size() == 0);
+    octree.erase(0);
+    CHECK(octree.size() == 0);
+    octree.insert(object);
+    CHECK(octree.size() == 1);
+    octree.erase(3);
+    CHECK(octree.size() == 1);
 
 }
 
-TEST_CASE("erase obejcts and id management, avoid duplicate id"){
+TEST_CASE("clear, root only "){
+    // clear the whole tree 
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
 
+    for(auto i = 0; i < 10; ++i){
+        std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+            position, size, octree.get_next_id()
+        );
+        octree.insert(object);
+        CHECK(octree.size() == size_t(i + 1));
+    }
+    octree.clear();
+    CHECK(octree.size() == 0);
 }
+TEST_CASE("clear, objects in other nodes"){
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
 
-TEST_CASE("erase a whole node"){
-    // clear all objects from a node
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+            position, size, octree.get_next_id()
+    );
+    octree.insert(object);
+    
+    position = game::Vector3{321, 9, 300};
+    std::unique_ptr<game::Object> object_2  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_2);
+    
+    position = game::Vector3{-100, 9, -210};
+    std::unique_ptr<game::Object> object_3  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_3);
+    
+    position = game::Vector3{-600, -20, 632};
+    std::unique_ptr<game::Object> object_4  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_4);
+    
+    position = game::Vector3{452, 21, 700};
+    std::unique_ptr<game::Object> object_5  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_5);
+
+    position = game::Vector3{-300, -18, 100};
+    
+        std::unique_ptr<game::Object> object_6  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_6);
+
+
+    CHECK(octree.size() == 6);
+    octree.clear();
+
+    CHECK(octree.size() == 0);
 }
-
 TEST_CASE("pruning leaves, simple"){
 
 }

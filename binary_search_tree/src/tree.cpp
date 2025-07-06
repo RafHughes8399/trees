@@ -202,6 +202,13 @@ void tree::octree::erase(std::unique_ptr<o_node>& tree, size_t object_id){
     }
 }
 
+void tree::octree::clear(std::unique_ptr<o_node>& tree){
+    tree->objects_.clear();
+    for(auto& child : tree->children_){
+        clear(child);
+    }
+}
+
 // object lookup
 
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
