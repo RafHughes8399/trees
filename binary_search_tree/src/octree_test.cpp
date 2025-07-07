@@ -413,6 +413,61 @@ TEST_CASE("pruning leaves, deeper"){
     auto otree = tree::octree(WORLD_BOX);
     insert_root_and_all_children(otree);
 
+    auto position = game::Vector3{321, 9, 300};
+    auto size = game::Vector3{1, 1, 1};
+    
+    std::unique_ptr<game::Object> object_2  = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(object_2);
+    
+    position = game::Vector3{-100, 9, -210};
+    std::unique_ptr<game::Object> object_3  = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(object_3);
+    
+    position = game::Vector3{-600, -20, 632};
+    std::unique_ptr<game::Object> object_4  = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(object_4);
+    
+    position = game::Vector3{452, 21, 700};
+    std::unique_ptr<game::Object> object_5  = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(object_5);
+
+    position = game::Vector3{-300, -18, 100};
+    
+        std::unique_ptr<game::Object> object_6  = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(object_6);
+
+    // insert other deeper objects, remove the children at higher 
+    std::cout << otree.num_nodes() << std::endl;
+    CHECK(otree.num_nodes() == 30);
+
+    // erase the other objects
+    // ensure that the leaves are pruned
+
+    for(size_t i = 8; i < 13; ++i){
+        otree.erase(i);
+    }
+
+    otree.update(3);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 30);
+    
+    otree.update(21);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 30);
+
+    std::cout << "final update " <<std::endl;
+    otree.update(8);
+    CHECK(otree.num_nodes() == 9);
 }
 TEST_CASE("pruning leaves, resetting counter by reinstert"){
 
