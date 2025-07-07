@@ -412,64 +412,43 @@ TEST_CASE("pruning leaves, root leaves"){
 TEST_CASE("pruning leaves, deeper"){
     auto otree = tree::octree(WORLD_BOX);
     insert_root_and_all_children(otree);
+    
+    // insert into the next level
 
-    auto position = game::Vector3{321, 9, 300};
+    //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+    auto position = game::Vector3{190, 20, 201};
     auto size = game::Vector3{1, 1, 1};
-    
-    std::unique_ptr<game::Object> object_2  = std::make_unique<game::TestObject>(
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
         position, size, otree.get_next_id()
     );
-    otree.insert(object_2);
+
+    otree.insert(level_2);
+    CHECK(otree.num_nodes() == 10);
     
-    position = game::Vector3{-100, 9, -210};
-    std::unique_ptr<game::Object> object_3  = std::make_unique<game::TestObject>(
+    position = game::Vector3{95.0f, 7.5f, 92.3f};
+    
+    std::unique_ptr<game::Object> level_3 = std::make_unique<game::TestObject>(
         position, size, otree.get_next_id()
     );
-    otree.insert(object_3);
+    otree.insert(level_3);
+    CHECK(otree.num_nodes() == 11);
+
+    CHECK(otree.size() == 10);
+
+    otree.erase(otree.get_next_id() -1 );
+    CHECK(otree.size() == 9);
     
-    position = game::Vector3{-600, -20, 632};
-    std::unique_ptr<game::Object> object_4  = std::make_unique<game::TestObject>(
-        position, size, otree.get_next_id()
-    );
-    otree.insert(object_4);
-    
-    position = game::Vector3{452, 21, 700};
-    std::unique_ptr<game::Object> object_5  = std::make_unique<game::TestObject>(
-        position, size, otree.get_next_id()
-    );
-    otree.insert(object_5);
-
-    position = game::Vector3{-300, -18, 100};
-    
-        std::unique_ptr<game::Object> object_6  = std::make_unique<game::TestObject>(
-        position, size, otree.get_next_id()
-    );
-    otree.insert(object_6);
-
-    // insert other deeper objects, remove the children at higher 
-    std::cout << otree.num_nodes() << std::endl;
-    CHECK(otree.num_nodes() == 30);
-
-    // erase the other objects
-    // ensure that the leaves are pruned
-
-    for(size_t i = 8; i < 13; ++i){
-        otree.erase(i);
-    }
-
-    otree.update(3);
-    CHECK(otree.size() == 8);
-    CHECK(otree.num_nodes() == 30);
-    
-    otree.update(21);
-    CHECK(otree.size() == 8);
-    CHECK(otree.num_nodes() == 30);
+    otree.update(2);
+    CHECK(otree.size() == 9);
 
     otree.update(NODE_LIFETIME);
-
-    // some seg fault errors after this happens, gotta figure it out
+   // CHECK(otree.size() == 9);
+   // something is going wrong after pruning this
 }
-TEST_CASE("pruning leaves, resetting counter by reinstert"){
+TEST_CASE("pruning leaves, resetting counter by reinsterting"){
 
 }
 
@@ -477,3 +456,4 @@ TEST_CASE("prune leaves, cascading"){
 
     // leaves that die at different times
 }
+

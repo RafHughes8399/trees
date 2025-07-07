@@ -739,6 +739,7 @@ namespace tree {
 		
 
 		// tree characteristics
+		bool is_root(std::unique_ptr<o_node>& tree);
 		bool is_empty(std::unique_ptr<o_node>& tree);
 		bool is_leaf(std::unique_ptr<o_node>& tree);
 		
@@ -839,6 +840,9 @@ namespace tree {
 		// tree properties
 		bool is_leaf() {
 			return is_leaf(root_);
+		}
+		bool is_root(){
+			return is_root(root_);
 		}
 		bool is_empty() {
 			return is_empty(root_);

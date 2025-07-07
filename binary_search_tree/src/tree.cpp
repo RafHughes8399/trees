@@ -267,7 +267,9 @@ int tree::octree::height(std::unique_ptr<o_node>& tree) {
 size_t tree::octree::size(std::unique_ptr<o_node>& tree) {
     auto empty = is_empty(tree);
     if (empty) { return 0; }
-
+    if(not tree){
+        return;
+    }
     if (tree != nullptr) {
         auto t_size = tree->objects_.size();
         for (auto& child : tree->children_) {
@@ -304,6 +306,9 @@ bool tree::octree::is_empty(std::unique_ptr<o_node>& tree) {
     }
     return true;
 }
+bool tree::octree::is_root(std::unique_ptr<o_node>& tree){
+    return tree->depth_ == 0  ? true : false;
+}
 bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
 
     return tree->children_.size() == 0 ? true : false;
@@ -312,20 +317,23 @@ bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
 // i suspect some issues with this,
 // tree builds all nodes at a time, yet they are not all deleted in one go
 void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
-        if (is_leaf(tree)) {
+    // you're thinking about it wrong i think 
+        if (is_leaf(tree) and not is_root(tree)) {
             tree->life_ += short(delta);
             if (tree->life_ > NODE_LIFETIME) {
-                tree.reset();
+                tree.reset(); // but not removed from the 
                 return;
             }
         }
         else {
             // if not a leaf node reset the life
-            game::print_box(tree->bounds_);
             tree->life_ = 0;
+            game::print_box(tree->bounds_);
+            std::cout << tree->children_.size() << std::endl;
             for (auto& child : tree->children_) {
                 prune_leaves(child, delta);
             }
+            std::cout << tree->children_.size() << std::endl;
         }
     return;
 } 
