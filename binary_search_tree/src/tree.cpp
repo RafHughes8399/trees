@@ -313,18 +313,14 @@ bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
 // tree builds all nodes at a time, yet they are not all deleted in one go
 void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
         if (is_leaf(tree)) {
-            game::print_box(tree->bounds_);
-            std::cout << "is a leaf  with life " << tree->life_ << std::endl;
             tree->life_ += short(delta);
             if (tree->life_ > NODE_LIFETIME) {
-                std::cout << "tree is to be pruned " << std::endl;
                 tree.reset();
                 return;
             }
         }
         else {
             // if not a leaf node reset the life
-            std::cout << "reset tree life for ";
             game::print_box(tree->bounds_);
             tree->life_ = 0;
             for (auto& child : tree->children_) {
@@ -354,16 +350,17 @@ void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
 
 
 void tree::octree::update(double delta){
-    // check the lifespan of the node 
+    // check the lifespan of the node
     // update objects within the node, tag ones that have been moved
 
-    auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};     // for now is empty, pending game implementation
+    // this is more game logic
+/*     auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};     // for now is empty, pending game implementation
     std::cout << "iterate through objects " << std::endl;
     for(auto& obj : root_->objects_){
         // this depends on obj implementation 
-        /*  if(obj->update(delta) == MOVED){
+        if(obj->update(delta) == MOVED){
             moved_objects.push_back(obj);
-            } */
+            }
            (void) obj;
         }
         // reinsert moved objects 
@@ -386,18 +383,9 @@ void tree::octree::update(double delta){
         std::cout << "erase and reinsert" << std::endl;
         //erase(m_obj.get());
         insert(*current, m_obj.get());
-    }
-
+    } */
     // prune dead objects from the tree
-    std::cout << "prune leaves" << std::endl;
     prune_leaves(delta);
     // then look for collisions within the node, placeholder for now
     // read the blog for a better implementation 
-    for(auto i = root_->objects_.begin(); i != root_->objects_.end(); ++i){
-        for(auto j = i + 1;  j != root_->objects_.end(); ++j){
-
-
-        }
-    }
-    return;
 }
