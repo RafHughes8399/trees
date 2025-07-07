@@ -11,6 +11,69 @@
 #define WORLD_BOX game::BoundingBox{WORLD_MIN, WORLD_MAX}
 
 
+void insert_root_and_all_children(tree::octree& otree){
+    // bang in the centre of the octant
+    auto centre = game::Vector3Add(game::Vector3{-762, -64, -762}, game::Vector3{0, 0 ,0});
+    centre = game::Vector3Scale(centre, 0.5);
+    auto size = game::Vector3{10, 10, 10};
+    std::unique_ptr<game::Object> lbb = std::make_unique<game::TestObject>(centre, size, 0);
+    
+    CHECK(otree.get_children().size() == 0);
+
+    otree.insert(lbb);
+    CHECK(otree.get_children().size() == 1);
+
+    centre = game::Vector3Add(game::Vector3{-762, -64, 0}, game::Vector3{0, 0, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> lbf = std::make_unique<game::TestObject>(centre, size, 1);
+    
+    otree.insert(lbf);
+    CHECK(otree.get_children().size() == 2);
+    
+    centre = game::Vector3Add(game::Vector3{-762, 0, -762}, game::Vector3{0, 64, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> ltb = std::make_unique<game::TestObject>(centre, size, 2);
+    
+    otree.insert(ltb);
+    CHECK(otree.get_children().size() == 3);
+    
+    centre = game::Vector3Add(game::Vector3{-762, 0, 0}, game::Vector3{0, 64, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> ltf = std::make_unique<game::TestObject>(centre, size, 3);
+    
+    otree.insert(ltf);
+    CHECK(otree.get_children().size() == 4);
+    
+    centre = game::Vector3Add(game::Vector3{0, -64, -762}, game::Vector3{762, 0, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rbb = std::make_unique<game::TestObject>(centre, size, 4);
+    
+    otree.insert(rbb);
+    CHECK(otree.get_children().size() == 5);
+    
+    
+    centre = game::Vector3Add(game::Vector3{0, -64, 0}, game::Vector3{762, 0, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    
+    std::unique_ptr<game::Object> rbf = std::make_unique<game::TestObject>(centre, size, 5);
+    
+    otree.insert(rbf);
+    CHECK(otree.get_children().size() == 6);
+    
+    centre = game::Vector3Add(game::Vector3{0, 0, -762}, game::Vector3{762, 64, 0});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rtb = std::make_unique<game::TestObject>(centre, size, 6);
+    
+    otree.insert(rtb);
+    CHECK(otree.get_children().size() == 7);
+    
+    centre = game::Vector3Add(game::Vector3{0, 0, 0}, game::Vector3{762, 64, 762});
+    centre = game::Vector3Scale(centre, 0.5);
+    std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size, 7);
+
+    otree.insert(rtf);
+}
+
 TEST_CASE("octree empty construction"){
     auto otree = tree::octree(WORLD_BOX); 
     CHECK(otree.size() == 0);
@@ -83,69 +146,7 @@ TEST_CASE("insert inspect"){
 }
 TEST_CASE("insert objects into children"){
     auto otree = tree::octree(WORLD_BOX);
-
-    // bang in the centre of the octant
-    
-    auto centre = game::Vector3Add(game::Vector3{-762, -64, -762}, game::Vector3{0, 0 ,0});
-    centre = game::Vector3Scale(centre, 0.5);
-    auto size = game::Vector3{10, 10, 10};
-    std::unique_ptr<game::Object> lbb = std::make_unique<game::TestObject>(centre, size, 0);
-    
-    CHECK(otree.get_children().size() == 0);
-
-    otree.insert(lbb);
-    CHECK(otree.get_children().size() == 1);
-
-    centre = game::Vector3Add(game::Vector3{-762, -64, 0}, game::Vector3{0, 0, 762});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> lbf = std::make_unique<game::TestObject>(centre, size, 1);
-    
-    otree.insert(lbf);
-    CHECK(otree.get_children().size() == 2);
-    
-    centre = game::Vector3Add(game::Vector3{-762, 0, -762}, game::Vector3{0, 64, 0});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> ltb = std::make_unique<game::TestObject>(centre, size, 2);
-    
-    otree.insert(ltb);
-    CHECK(otree.get_children().size() == 3);
-    
-    centre = game::Vector3Add(game::Vector3{-762, 0, 0}, game::Vector3{0, 64, 762});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> ltf = std::make_unique<game::TestObject>(centre, size, 3);
-    
-    otree.insert(ltf);
-    CHECK(otree.get_children().size() == 4);
-    
-    centre = game::Vector3Add(game::Vector3{0, -64, -762}, game::Vector3{762, 0, 0});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rbb = std::make_unique<game::TestObject>(centre, size, 4);
-    
-    otree.insert(rbb);
-    CHECK(otree.get_children().size() == 5);
-    
-    
-    centre = game::Vector3Add(game::Vector3{0, -64, 0}, game::Vector3{762, 0, 762});
-    centre = game::Vector3Scale(centre, 0.5);
-    
-    std::unique_ptr<game::Object> rbf = std::make_unique<game::TestObject>(centre, size, 5);
-    
-    otree.insert(rbf);
-    CHECK(otree.get_children().size() == 6);
-    
-    centre = game::Vector3Add(game::Vector3{0, 0, -762}, game::Vector3{762, 64, 0});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rtb = std::make_unique<game::TestObject>(centre, size, 6);
-    
-    otree.insert(rtb);
-    CHECK(otree.get_children().size() == 7);
-    
-    centre = game::Vector3Add(game::Vector3{0, 0, 0}, game::Vector3{762, 64, 762});
-    centre = game::Vector3Scale(centre, 0.5);
-    std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size, 7);
-
-    otree.insert(rtf);
-
+    insert_root_and_all_children(otree);
     CHECK(otree.get_children().size() == 8);
     CHECK(otree.size() == 8);
 
@@ -385,15 +386,39 @@ TEST_CASE("clear, objects in other nodes"){
 
     CHECK(octree.size() == 0);
 }
-TEST_CASE("pruning leaves, simple"){
+TEST_CASE("pruning leaves, root leaves"){
+    auto otree = tree::octree(WORLD_BOX);
+    // insert an object into root and all children
+    insert_root_and_all_children(otree);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    // insert object into each child 
 
+    // remove those objects
+    for(size_t i = 1; i < 8; ++i){
+        otree.erase(i);
+    }
+    // update
+    // nothing should be pruned until NODE
+    otree.update(1);
+    CHECK(otree.num_nodes() == 9);
+
+    otree.update(5);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.num_nodes() == 1);
 }
-TEST_CASE("pruning leaves, multiple"){
-
-
-}
-
 TEST_CASE("pruning leaves, deeper"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
 
+}
+TEST_CASE("pruning leaves, resetting counter by reinstert"){
 
+}
+
+TEST_CASE("prune leaves, cascading"){
+
+    // leaves that die at different times
 }
