@@ -445,7 +445,7 @@ TEST_CASE("pruning leaves, deeper"){
     CHECK(otree.size() == 9);
 
     otree.update(NODE_LIFETIME);
-   // CHECK(otree.size() == 9);
+    CHECK(otree.size() == 9);
    // something is going wrong after pruning this
 }
 TEST_CASE("pruning leaves, resetting counter by reinsterting"){

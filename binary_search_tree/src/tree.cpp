@@ -268,9 +268,9 @@ size_t tree::octree::size(std::unique_ptr<o_node>& tree) {
     auto empty = is_empty(tree);
     if (empty) { return 0; }
     if(not tree){
-        return;
+        return 0;
     }
-    if (tree != nullptr) {
+    else {
         auto t_size = tree->objects_.size();
         for (auto& child : tree->children_) {
             t_size += size(child);
@@ -314,13 +314,18 @@ bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
     return tree->children_.size() == 0 ? true : false;
 }
 
-// i suspect some issues with this,
-// tree builds all nodes at a time, yet they are not all deleted in one go
+
+// i suspect some issues with this, i think it is resetting the pointer 
+// but then the parent is now holding onto a null pointer
+
+// i need to remove it from the parent's children list
 void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
     // you're thinking about it wrong i think 
         if (is_leaf(tree) and not is_root(tree)) {
             tree->life_ += short(delta);
             if (tree->life_ > NODE_LIFETIME) {
+                game::print_box(tree->bounds_);
+                std::cout << "prune that jawn " << std::endl;
                 tree.reset(); // but not removed from the 
                 return;
             }
@@ -329,10 +334,19 @@ void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
             // if not a leaf node reset the life
             tree->life_ = 0;
             game::print_box(tree->bounds_);
-            std::cout << tree->children_.size() << std::endl;
+            std::cout <<  "pre prune "  << tree->children_.size() << std::endl;
             for (auto& child : tree->children_) {
+                std::cout << "check child " << std::endl;
                 prune_leaves(child, delta);
             }
+            
+            // cull the null children
+            auto new_end = std::remove_if(tree->children_.begin(), tree->children_.end(), 
+            [](auto& child) -> bool {
+                return not child;
+            });
+            tree->children_.erase(new_end, tree->children_.end());
+            std::cout << "post prune " << std::endl;
             std::cout << tree->children_.size() << std::endl;
         }
     return;
