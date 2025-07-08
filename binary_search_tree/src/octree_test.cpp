@@ -130,16 +130,10 @@ TEST_CASE("insert inspect"){
     auto test_pos = game::Vector3{0.0, 0.0, 0.0};
     auto test_size = game::Vector3{20.0, 20.0, 20.0};
     std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
-    auto obj_box = test_object->get_bounding_box();
 
-    std::cout << "object bounding box " << std::endl;
-    game::print_box(obj_box);
-
-    std::cout << "tree bounding box pre insert " << std::endl;
     // traverse through the tree, print the node box and the child boxes
     
     otree.insert(test_object);
-    std::cout << "tree bounding box pre insert " << std::endl;
     //otree.traverse_tree();
     
 
@@ -395,26 +389,47 @@ TEST_CASE("pruning leaves, root leaves"){
     // insert object into each child 
 
     // remove those objects
-    for(size_t i = 1; i < 8; ++i){
+    for(size_t i = 0; i < 8; ++i){
         otree.erase(i);
     }
     // update
     // nothing should be pruned until NODE
     otree.update(1);
     CHECK(otree.num_nodes() == 9);
+    CHECK(otree.is_empty());
 
     otree.update(5);
+    CHECK(otree.is_empty());
     CHECK(otree.num_nodes() == 9);
     
     otree.update(NODE_LIFETIME);
+    CHECK(otree.is_empty());
     CHECK(otree.num_nodes() == 1);
 }
-TEST_CASE("pruning leaves, deeper"){
+TEST_CASE("pruning leaves, do not prune"){
     auto otree = tree::octree(WORLD_BOX);
+    
+    // populates the tree with a root node and all 8 children, each with one object
     insert_root_and_all_children(otree);
     
     // insert into the next level
-
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    
+    //
+}
+TEST_CASE("pruning leaves, deeper in the tree"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree); // creates 
     //  762, 64, 762
     // 381, 32, 381
     // 190.5, 16, 190.5
@@ -425,28 +440,39 @@ TEST_CASE("pruning leaves, deeper"){
         position, size, otree.get_next_id()
     );
 
-    otree.insert(level_2);
-    CHECK(otree.num_nodes() == 10);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
     
+    otree.insert(level_2);
+
+    CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 10);
     position = game::Vector3{95.0f, 7.5f, 92.3f};
     
     std::unique_ptr<game::Object> level_3 = std::make_unique<game::TestObject>(
         position, size, otree.get_next_id()
     );
-    otree.insert(level_3);
-    CHECK(otree.num_nodes() == 11);
 
+    otree.insert(level_3);
+    CHECK(otree.height() == 3);
     CHECK(otree.size() == 10);
+    CHECK(otree.num_nodes() == 11);
 
     otree.erase(otree.get_next_id() -1 );
     CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 11);
     
     otree.update(2);
     CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 11);
 
     otree.update(NODE_LIFETIME);
     CHECK(otree.size() == 9);
-   // something is going wrong after pruning this
+    CHECK(otree.num_nodes() == 10);
+    // something is going wrong after pruning this
+
+    std::cout << "==========================================================" << std::endl;
+    otree.traverse_tree();
 }
 TEST_CASE("pruning leaves, resetting counter by reinsterting"){
 

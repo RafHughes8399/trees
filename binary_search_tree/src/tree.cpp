@@ -321,7 +321,8 @@ bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
 // i need to remove it from the parent's children list
 void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
     // you're thinking about it wrong i think 
-        if (is_leaf(tree) and not is_root(tree)) {
+        if (is_leaf(tree) and not is_root(tree) 
+            and is_empty(tree)) {
             tree->life_ += short(delta);
             if (tree->life_ > NODE_LIFETIME) {
                 game::print_box(tree->bounds_);
@@ -331,7 +332,7 @@ void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
             }
         }
         else {
-            // if not a leaf node reset the life
+            // if not a leaf node reset the life, or is not empty 
             tree->life_ = 0;
             game::print_box(tree->bounds_);
             std::cout <<  "pre prune "  << tree->children_.size() << std::endl;
@@ -357,9 +358,9 @@ void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
 		if(!tree){
 			return;
 		}
-		std::cout << "node bounds: "; 
+		std::cout << "-------NODE-------- \nbounds: "; 
 		game::print_box(tree->bounds_);
-		std::cout << "node objects:  " << std::endl; 
+		std::cout << "objects:  " << std::endl; 
 		for(auto& object : tree->objects_){
 			object->print_object();
 		}
