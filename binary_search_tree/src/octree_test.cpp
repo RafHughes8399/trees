@@ -475,11 +475,99 @@ TEST_CASE("pruning leaves, deeper in the tree"){
     otree.traverse_tree();
 }
 TEST_CASE("pruning leaves, resetting counter by reinsterting"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree); // creates a node in each direct child of the root
 
+    //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+
+    // populating the first two levels of the tree
+    auto position = game::Vector3{190, 20, 201};
+    auto size = game::Vector3{1, 1, 1};
+    
+
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2);
+
+    position = game::Vector3{200, 10, -30};
+    std::unique_ptr<game::Object> level_2_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2_1);
+
+    position = game::Vector3{300, -10, 180};
+    std::unique_ptr<game::Object> level_1_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_1);
+    position = game::Vector3{600, 5, 400};
+    std::unique_ptr<game::Object> level_0 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_0);
+    position = game::Vector3{-390, -19, 147};
+    std::unique_ptr<game::Object> level_1_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_2);
+
+    position = game::Vector3{95.0f, 7.5f, 92.3f};
+    std::unique_ptr<game::Object> level_3 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_3);
+
+
+    std::unique_ptr<game::Object> level_3_reinsert = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );    
+
+    CHECK(otree.size() == 14);
+
+    // erasing and reinserting before life counter reaches node lifetime means that the leaf should not be pruned
+    // rather, the number of nodes should not change
+
+    auto nodes = otree.num_nodes();
+    otree.update(NODE_LIFETIME + 1); // 31 
+    CHECK(nodes == otree.num_nodes());
+
+    otree.erase(otree.get_next_id() -1 );
+    otree.update(NODE_LIFETIME - 2); // 29
+    CHECK(nodes == otree.num_nodes());
+    CHECK(otree.size() == 13);
+
+    otree.insert(level_3_reinsert);
+    otree.update(1); // the leafs counter should be reset
+    CHECK(otree.size() == 14);
+    
+    CHECK(nodes == otree.num_nodes());
+    otree.update(NODE_LIFETIME);
+    CHECK(nodes == otree.num_nodes()); // no leaves should be pruned because the are not empty
+
+    otree.erase(otree.get_next_id() - 1);
+    otree.update(NODE_LIFETIME + 1);
+    CHECK(otree.num_nodes() == nodes - 1); // now it should be remvoed
 }
 
 TEST_CASE("prune leaves, cascading"){
 
     // leaves that die at different times
+
 }
 
+TEST_CASE("get objects, all in the tree"){
+
+
+}
+TEST_CASE("get objects, from a node's children"){
+
+
+}
+TEST_CASE("get objects, all within a certain bounding box"){
+
+
+}
