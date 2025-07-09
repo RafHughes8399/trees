@@ -178,12 +178,9 @@ void tree::octree::erase(std::unique_ptr<o_node>& tree, size_t object_id){
     if(not tree){
         return;
     } 
-    std::cout << "erase " << std::endl;
     auto new_end = std::remove_if(tree->objects_.begin(), tree->objects_.end(),
         [object_id](auto& obj) -> bool{
-            std::cout << "checking object " << obj->get_id() << std::endl;
             if(object_id == obj->get_id()){
-                std::cout << "remove" << std::endl;
                 return true;
             }
             return false;
@@ -281,7 +278,6 @@ size_t tree::octree::size(std::unique_ptr<o_node>& tree) {
 }
 
 size_t tree::octree::num_nodes(std::unique_ptr<o_node>& tree){
-    std::cout << tree.get() << std::endl;
     if(tree){
         size_t size = 1;
         for(auto& child : tree->children_){
@@ -326,18 +322,15 @@ void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
             tree->life_ += short(delta);
             if (tree->life_ >= NODE_LIFETIME) {
                 game::print_box(tree->bounds_);
-                std::cout << "prune that jawn " << std::endl;
                 tree.reset(); // but not removed from the 
                 return;
             }
         }
         else {
-            // if not a leaf node reset the life, or is not empty 
+            // if not a leaf node, or is not empty, reset the life
             tree->life_ = 0;
             game::print_box(tree->bounds_);
-            std::cout <<  "pre prune "  << tree->children_.size() << std::endl;
             for (auto& child : tree->children_) {
-                std::cout << "check child " << std::endl;
                 prune_leaves(child, delta);
             }
             
@@ -347,8 +340,6 @@ void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
                 return not child;
             });
             tree->children_.erase(new_end, tree->children_.end());
-            std::cout << "post prune " << std::endl;
-            std::cout << tree->children_.size() << std::endl;
         }
     return;
 } 
@@ -378,7 +369,6 @@ void tree::octree::update(double delta){
 
     // this is more game logic
 /*     auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};     // for now is empty, pending game implementation
-    std::cout << "iterate through objects " << std::endl;
     for(auto& obj : root_->objects_){
         // this depends on obj implementation 
         if(obj->update(delta) == MOVED){
@@ -387,23 +377,17 @@ void tree::octree::update(double delta){
            (void) obj;
         }
         // reinsert moved objects 
-    std::cout << "there are " << moved_objects.size() << " moved objects" << std::endl;
-    std::cout << "reinsert moved objects " << std::endl;
     for(auto& m_obj : moved_objects){
         auto current = &root_;
         // while the current region does not contain the object, move up a level
         auto box = m_obj.get()->get_bounding_box();
         
-        std::cout << "attempt to find the parent of ";
         game::print_box(current->get()->bounds_);
         while(not node_contains_object((*current)->bounds_, box)){
             current = (*current)->parent_;
         }
         // once the parent is found, erase and then reinsert the object into it
-        std::cout << "found parent, the parent is ";
         game::print_box(current->get()->bounds_);  
-
-        std::cout << "erase and reinsert" << std::endl;
         //erase(m_obj.get());
         insert(*current, m_obj.get());
     } */

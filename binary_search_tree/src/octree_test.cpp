@@ -591,7 +591,6 @@ TEST_CASE("prune leaves, cascading"){
     otree.update(NODE_LIFETIME);
 
     CHECK(otree.num_nodes() == 2);
-
 }
 
 TEST_CASE("get objects, all in the tree"){
