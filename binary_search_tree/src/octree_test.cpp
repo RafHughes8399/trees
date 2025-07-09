@@ -556,6 +556,41 @@ TEST_CASE("pruning leaves, resetting counter by reinsterting"){
 TEST_CASE("prune leaves, cascading"){
 
     // leaves that die at different times
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
+
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+
+    // update 15
+    otree.erase(7);
+    otree.update(NODE_LIFETIME / 2);
+    otree.erase(6);
+
+    CHECK(otree.size() == 6);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME / 2);
+    // a node should be gone, but only one
+    CHECK(otree.num_nodes() == 8);
+    
+    otree.update(NODE_LIFETIME / 2);
+    // another node should be gone
+    CHECK(otree.num_nodes() == 7);
+    
+    otree.erase(5);
+    otree.erase(4);
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.num_nodes() == 5);
+
+    otree.erase(3);
+    otree.update(NODE_LIFETIME / 2);
+
+    otree.erase(2);
+    otree.erase(1);
+    otree.update(NODE_LIFETIME);
+
+    CHECK(otree.num_nodes() == 2);
 
 }
 

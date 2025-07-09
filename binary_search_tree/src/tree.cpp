@@ -324,7 +324,7 @@ void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
         if (is_leaf(tree) and not is_root(tree) 
             and is_empty(tree)) {
             tree->life_ += short(delta);
-            if (tree->life_ > NODE_LIFETIME) {
+            if (tree->life_ >= NODE_LIFETIME) {
                 game::print_box(tree->bounds_);
                 std::cout << "prune that jawn " << std::endl;
                 tree.reset(); // but not removed from the 
