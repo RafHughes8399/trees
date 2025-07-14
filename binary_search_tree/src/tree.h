@@ -729,8 +729,28 @@ namespace tree {
 		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(std::unique_ptr<o_node>& tree);
 		
 		template<class UnaryPred>
-		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(std::unique_ptr<o_node>& tree, UnaryPred p);
-		
+		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(std::unique_ptr<o_node>& tree, UnaryPred p){
+		// pass the object to the predicate
+		auto predicate_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};
+		if(not tree){
+			return predicate_objects;
+		}
+
+		for(auto& obj : tree->objects_){
+			if(p(obj)){
+				predicate_objects.push_back(obj);
+			}
+		}
+		for(auto& child : tree->children_){
+			auto child_objects = get_objects(child, p);
+			for(auto child_object : child_objects){
+				predicate_objects.push_back(child_object.get());
+
+			}
+		}
+		return predicate_objects;
+		}
+			
 		// height, size and traversal
 		int height(std::unique_ptr<o_node>& tree);
 		size_t size(std::unique_ptr<o_node>& tree);
@@ -803,8 +823,14 @@ namespace tree {
 		game::Object* find_object(std::unique_ptr<game::Object>& obj) {
 			return find_object(root_, obj);
 		}
+		template<typename UnaryPred>
+		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(UnaryPred p){
+			return get_objects(root_, p);
+		}
+		std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> get_objects(){
+			return get_objects(root_);
+		}
 		
-	
 		// update 
 		void update(double delta);
 		std::unique_ptr<o_node>& get_root() {
@@ -814,9 +840,6 @@ namespace tree {
 		// accessors
 		std::vector<std::unique_ptr<o_node>>& get_children() {
 			return root_->children_;
-		}
-		std::vector<std::unique_ptr<game::Object>>& get_objects() {
-			return root_->objects_;
 		}
 		size_t get_next_id(){
 			return next_id_;

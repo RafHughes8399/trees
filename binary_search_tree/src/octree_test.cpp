@@ -594,14 +594,46 @@ TEST_CASE("prune leaves, cascading"){
 }
 
 TEST_CASE("get objects, all in the tree"){
+    auto otree = tree::octree(WORLD_BOX);
+    SECTION("empty tree"){
+        auto tree_objects = otree.get_objects();
+        CHECK(tree_objects.size() == 0);
 
-
+    }
+    SECTION("non-empty tree"){
+        insert_root_and_all_children(otree);
+        auto tree_objects = otree.get_objects();
+        CHECK(tree_objects.size() == 8);
+    }
 }
-TEST_CASE("get objects, from a node's children"){
 
-
-}
 TEST_CASE("get objects, all within a certain bounding box"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
 
+    auto bounds = WORLD_BOX;
+    auto predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
 
+    auto tree_objects = otree.get_objects(predicate);
+    CHECK(tree_objects.size() == otree.size());
+
+    bounds = game::BoundingBox{
+        game:: Vector3{0,0,0},
+        WORLD_BOX.max
+    };
+    auto new_predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
+    
+    auto tree_objects = otree.get_objects(new_predicate);
+    CHECK(tree_objects.size() == 1);
+    // only checking one child 
+}
+TEST_CASE("get objects, all within a certain bounding box, checking recursive inclusion of children"){
 }
