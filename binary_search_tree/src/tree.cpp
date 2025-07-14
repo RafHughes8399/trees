@@ -244,7 +244,35 @@ game::Object* tree::octree::find_object(std::unique_ptr<o_node>& tree, std::uniq
     return nullptr;  // Not found
 }
 
+template<class UnaryPred>
+std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> tree::octree::get_objects(std::unique_ptr<o_node>& tree, UnaryPred p){
+    // pass the object to the predicate
+    auto predicate_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};
+    if(not tree){
+        return predicate_objects;
+    }
 
+    for(auto& obj : tree->objects_){
+        if(p(obj)){
+            predicate_objects.push_back(obj);
+        }
+    }
+    for(auto& child : tree->children_){
+        auto child_objects = get_objects(child, p);
+        for(auto child_object : child_objects){
+            predicate_objects.push_back(child_object.get());
+
+        }
+    }
+    return predicate_objects;
+}
+
+std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> tree::octree::get_objects(std::unique_ptr<o_node>& tree){
+    return get_objects(tree, [](auto& object) -> bool{
+        (void) object;
+        return true;
+    });
+}
 int tree::octree::height(std::unique_ptr<o_node>& tree) {
     if (!tree) {
         return -1;
