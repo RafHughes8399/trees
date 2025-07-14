@@ -631,9 +631,59 @@ TEST_CASE("get objects, all within a certain bounding box"){
         and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
     };
     
-    auto tree_objects = otree.get_objects(new_predicate);
+    tree_objects = otree.get_objects(new_predicate);
     CHECK(tree_objects.size() == 1);
     // only checking one child 
 }
 TEST_CASE("get objects, all within a certain bounding box, checking recursive inclusion of children"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
+
+    // insert one more into the 
+
+    // and go recursively down that path
+    
+   //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+
+    // populating the first two levels of the tree
+    auto position = game::Vector3{500, 35, 600};
+    auto size = game::Vector3{1, 1, 1};
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2);
+
+    position = game::Vector3{700, 62, 650};
+    std::unique_ptr<game::Object> level_2_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2_1);
+
+    position = game::Vector3{400, 43, 521};
+    std::unique_ptr<game::Object> level_1_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_1);
+    position = game::Vector3{200, 18, 200};
+    std::unique_ptr<game::Object> level_0 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_0);
+    CHECK(otree.size() == 12);
+
+    auto  bounds = game::BoundingBox{
+        game:: Vector3{0,0,0},
+        WORLD_BOX.max
+    };
+    auto new_predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
+    
+    auto tree_objects = otree.get_objects(new_predicate);
+    CHECK(tree_objects.size() == 5);
 }
