@@ -3,3 +3,10 @@
 
 -> switch to smart pointers 
 -> benchmark and fill in remaining tests
+
+
+
+
+-> ensure the id management works, i.e the case of insert 0 and 1, remove 0 then make sure that there is not two 1s
+-> test erase, and pruning
+-> a get_objects thing that returns a list of all the objects or ones that meet a predicate 

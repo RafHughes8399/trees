@@ -1,10 +1,75 @@
 #include "tree.h"
 
 
+
+// containment checks
+
+
 bool tree::octree::node_contains_object(game::BoundingBox& node, game::BoundingBox& object){
-	return (object.min.x > node.min.x and object.min.y > node.min.y and object.min.z > node.min.z)
-		and (object.max.x < node.max.x and object.max.y < node.max.y and object.max.z < node.max.z);
+    // compare the bounding box of the node and the object
+    return (object.min.x > node.min.x and object.min.y > node.min.y and object.min.z > node.min.z)
+    and (object.max.x < node.max.x and object.max.y < node.max.y and object.max.z < node.max.z);
 }
+// return the child "index" that the object can fit into, if -1 then no child can fit the object
+int tree::octree::object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object){
+    // check if the object will fit into potential children of the node 
+    auto centre = game::Vector3Add(node.max, node.min);
+    centre = game::Vector3Scale(centre, 0.5f);
+
+    // first check if the object crosses the centre of any axis, if it does then no child will fit it
+    bool crosses_centre = (object.min.x < centre.x and centre.x < object.max.x) 
+    or (object.min.y < centre.y and centre.y < object.max.y) 
+    or (object.min.z < centre.z and centre.z < object.max.z);
+    
+    if(crosses_centre) {return -1;}
+
+    // setup the bounding boxes for the potential children
+    auto children = std::vector<game::BoundingBox>{};
+    // 0
+    children.push_back(
+        game::BoundingBox{node.min, centre}
+    );
+    // 1
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x,node.min.y, centre.z},  game::Vector3{centre.x, centre.y, node.max.z}}
+    );
+    // 2
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x, centre.y, node.min.z},  game::Vector3{centre.x, node.max.y, centre.z}}
+    );
+    // 3
+    children.push_back(
+        game::BoundingBox{game::Vector3{node.min.x, centre.y, centre.z},  game::Vector3{centre.x, node.max.y, node.max.z}}
+    );
+    // 4
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, node.min.y, node.min.z},  game::Vector3{node.max.x, centre.y, centre.z}}
+    );
+    //5
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, node.min.y, centre.z},  game::Vector3{node.max.x, centre.y, node.max.z}}
+    );
+    //6
+    children.push_back(
+        game::BoundingBox{game::Vector3{centre.x, centre.y, node.min.z},  game::Vector3{node.max.x, node.max.y, centre.z}}
+    );
+    //7
+    children.push_back(
+        game::BoundingBox{centre, node.max}
+    );
+
+    // otherwise, check which child will fit the object
+    for(size_t i = 0; i < CHILDREN; ++i){
+        // check the child that will contain the object
+        auto child_node = children.at(i);
+        if(node_contains_object(child_node, object)){
+            // return the "index" of the child that will fit the node
+            return int(i);
+        }
+    }
+    return -1;
+}
+// child construction 
 bool tree::octree::is_child_built(std::unique_ptr<o_node>& tree, std::unique_ptr<o_node>& child){
     for(auto& c : tree->children_){
         if(*c == *child){return true;}
@@ -16,10 +81,13 @@ void tree::octree::build_child(std::unique_ptr<o_node>& tree, int child_to_build
     auto centre = game::Vector3Add(tree->bounds_.max, tree->bounds_.min);
     centre = game::Vector3Scale(centre, 0.5f);
 
+    // create the child
     auto child = std::make_unique<o_node>();
     child->depth_ = tree->depth_ + 1;
     child->life_ = 0;
-    child->parent_ = tree.get();
+    child->parent_ = &tree;
+
+    // based on the "index" order used ni the method above to select the appropraite bounding box for the child
     switch (child_to_build)
     {
     case 0:
@@ -49,70 +117,22 @@ void tree::octree::build_child(std::unique_ptr<o_node>& tree, int child_to_build
     default:
         break;
     }
-    // check if child_to_build has been built, if not build it 
+
+    // if the child has not been built, build it
     if(not is_child_built(tree, child)){
         tree->children_.push_back(std::move(child));
     }
-    // Create 8 children octants
-    // Octant subdivision: Left/Right (x), Bottom/Top (y), Back/Front (z)
-    // Left Bottom Back (min corner octan
 }
 
-int tree::octree::object_contained_by_child(game::BoundingBox& node, game::BoundingBox& object){
-
-	// check if the object will fit into potential children of the node 
-	auto centre = game::Vector3Add(node.max, node.min);
-	centre = game::Vector3Scale(centre, 0.5f);
-    // first check if the object crosses the centre of any axis, if it does then no child will fit it
-    bool crosses_centre = (object.min.x < centre.x and centre.x < object.max.x) 
-    or (object.min.y < centre.y and centre.y < object.max.y) 
-    or (object.min.z < centre.z and centre.z < object.max.z);
-    
-    if(crosses_centre) {return -1;}
-
-    auto children = std::vector<game::BoundingBox>{};
-    children.push_back(
-        game::BoundingBox{node.min, centre}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x,node.min.y, centre.z},  game::Vector3{centre.x, centre.y, node.max.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x, centre.y, node.min.z},  game::Vector3{centre.x, node.max.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{node.min.x, centre.y, centre.z},  game::Vector3{centre.x, node.max.y, node.max.z}}
-    );
-
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, node.min.y, node.min.z},  game::Vector3{node.max.x, centre.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, node.min.y, centre.z},  game::Vector3{node.max.x, centre.y, node.max.z}}
-    );
-    children.push_back(
-        game::BoundingBox{game::Vector3{centre.x, centre.y, node.min.z},  game::Vector3{node.max.x, node.max.y, centre.z}}
-    );
-    children.push_back(
-        game::BoundingBox{centre, node.max}
-    );
-
-	// otherwise, check which child will fit the object
-    for(size_t i = 0; i < CHILDREN; ++i){
-        // check the child that will contain the object
-        auto child_node = children.at(i);
-        if(node_contains_object(child_node, object)){
-            return int(i);
-        }
-    }
-    return -1;
-}
-// amend such that it only creates the children if necessary
+// insertion
 void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
 	auto object_bounds = object->get_bounding_box();
+    // check if the node contains the object, if not then immediately return
 	if(not node_contains_object(tree->bounds_, object_bounds)){ return; }
-	else{
-		if(tree->depth_ == max_depth_){
+	
+    else{
+        // if at the max depth then insert, no further children can be constructed
+        if(tree->depth_ == max_depth_){
 			tree->objects_.push_back(std::move(object));
 			return;
 		}
@@ -125,11 +145,12 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
                     build_child(tree, child_to_build);
             }
 			else{
-				// if the object will not fit into a child, insert into the node without making the children
+				// if no child need be built, then insert into the node
 				tree->objects_.push_back(std::move(object));
                 return;
 			}
 		}
+        // recursively iterate through the children
 	    for (auto& child : tree->children_) {
 		// if does fit in a child, recursively insert
             if (node_contains_object(child->bounds_, object_bounds)) {
@@ -137,6 +158,7 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::unique_ptr<game::O
                 return;
             }
 		}
+        // if this point is reached, there are no children that the object can fit into so insert into the node
         tree->objects_.push_back(std::move(object));
 	}
 }
@@ -152,21 +174,51 @@ void tree::octree::insert(std::unique_ptr<o_node>& tree, std::vector<std::unique
 
 }
 
-std::unique_ptr<game::Object> tree::octree::erase(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object){
-    (void) tree;
-    (void) object;
-    return std::unique_ptr<game::Object>();
+void tree::octree::erase(std::unique_ptr<o_node>& tree, size_t object_id){
+    if(not tree){
+        return;
+    } 
+    auto new_end = std::remove_if(tree->objects_.begin(), tree->objects_.end(),
+        [object_id](auto& obj) -> bool{
+            if(object_id == obj->get_id()){
+                return true;
+            }
+            return false;
+        });
+    // if nothing is to be erased, then check the children
+    if(new_end == tree->objects_.end()){
+        for(auto& child : tree->children_){
+            erase(child, object_id);
+        }
+
+    }
+    // an object is to be removed
+    else{
+        tree->objects_.erase(new_end, tree->objects_.end());
+        return;
+    }
 }
+
+void tree::octree::clear(std::unique_ptr<o_node>& tree){
+    tree->objects_.clear();
+    for(auto& child : tree->children_){
+        clear(child);
+    }
+}
+
+// object lookup
 
 tree::octree::o_node* tree::octree::find_object_node(std::unique_ptr<o_node>& tree, std::unique_ptr<game::Object>& object) {
     if (!tree) {
         return nullptr;
     }
+    // iterate through the objects in the node, if equal, return a pointer to the node
     for (auto& obj : tree->objects_) {
         if (*obj == *object) {
             return tree.get();
         }
     }
+    // recurse through the children of the node
     for (auto& child : tree->children_) {
         auto result =  find_object_node(child, object);
         if (result != nullptr) {
@@ -180,9 +232,6 @@ game::Object* tree::octree::find_object(std::unique_ptr<o_node>& tree, std::uniq
     if (!tree) return nullptr;
 
     // Check if object is in current o_node
-    for (auto& obj : tree->objects_) {
-        if(*obj == *object) {return obj.get();}
-    }
 
     // Recursively search children
     for (auto& child : tree->children_) {
@@ -195,11 +244,18 @@ game::Object* tree::octree::find_object(std::unique_ptr<o_node>& tree, std::uniq
     return nullptr;  // Not found
 }
 
+std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>> tree::octree::get_objects(std::unique_ptr<o_node>& tree){
+    return get_objects(tree, [](auto& object) -> bool{
+        (void) object;
+        return true;
+    });
+}
 int tree::octree::height(std::unique_ptr<o_node>& tree) {
     if (!tree) {
         return -1;
     }
     else {
+
         int max_child_height = -1;
         for (auto& child : tree->children_) {
             int child_height = height(child);
@@ -213,8 +269,10 @@ int tree::octree::height(std::unique_ptr<o_node>& tree) {
 size_t tree::octree::size(std::unique_ptr<o_node>& tree) {
     auto empty = is_empty(tree);
     if (empty) { return 0; }
-
-    if (tree != nullptr) {
+    if(not tree){
+        return 0;
+    }
+    else {
         auto t_size = tree->objects_.size();
         for (auto& child : tree->children_) {
             t_size += size(child);
@@ -224,6 +282,18 @@ size_t tree::octree::size(std::unique_ptr<o_node>& tree) {
     return 0;
 }
 
+size_t tree::octree::num_nodes(std::unique_ptr<o_node>& tree){
+    if(tree){
+        size_t size = 1;
+        for(auto& child : tree->children_){
+            size += num_nodes(child);
+        }
+        return size;
+    }
+    else{
+        return 0;
+    }
+}
 
 bool tree::octree::is_empty(std::unique_ptr<o_node>& tree) {
     // check the current list 
@@ -237,27 +307,44 @@ bool tree::octree::is_empty(std::unique_ptr<o_node>& tree) {
     }
     return true;
 }
+bool tree::octree::is_root(std::unique_ptr<o_node>& tree){
+    return tree->depth_ == 0  ? true : false;
+}
 bool tree::octree::is_leaf(std::unique_ptr<o_node>& tree) {
 
     return tree->children_.size() == 0 ? true : false;
 }
 
-// i suspect some issues with this,
-// tree builds all nodes at a time, yet they are not all deleted in one go
+
+// i suspect some issues with this, i think it is resetting the pointer 
+// but then the parent is now holding onto a null pointer
+
+// i need to remove it from the parent's children list
 void tree::octree::prune_leaves(std::unique_ptr<o_node>& tree, double delta) {
-        if (is_leaf(tree)) {
+    // you're thinking about it wrong i think 
+        if (is_leaf(tree) and not is_root(tree) 
+            and is_empty(tree)) {
             tree->life_ += short(delta);
-            if (tree->life_ > NODE_LIFETIME) {
-                tree.reset();
+            if (tree->life_ >= NODE_LIFETIME) {
+                game::print_box(tree->bounds_);
+                tree.reset(); // but not removed from the 
                 return;
             }
         }
         else {
-            // if not a leaf node reset the life
+            // if not a leaf node, or is not empty, reset the life
             tree->life_ = 0;
+            game::print_box(tree->bounds_);
             for (auto& child : tree->children_) {
                 prune_leaves(child, delta);
             }
+            
+            // cull the null children
+            auto new_end = std::remove_if(tree->children_.begin(), tree->children_.end(), 
+            [](auto& child) -> bool {
+                return not child;
+            });
+            tree->children_.erase(new_end, tree->children_.end());
         }
     return;
 } 
@@ -267,9 +354,9 @@ void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
 		if(!tree){
 			return;
 		}
-		std::cout << "node bounds: "; 
+		std::cout << "-------NODE-------- \nbounds: "; 
 		game::print_box(tree->bounds_);
-		std::cout << "node objects:  " << std::endl; 
+		std::cout << "objects:  " << std::endl; 
 		for(auto& object : tree->objects_){
 			object->print_object();
 		}
@@ -282,33 +369,35 @@ void tree::octree::traverse_tree(std::unique_ptr<o_node>& tree){
 
 
 void tree::octree::update(double delta){
-    // check the lifespan of the node 
+    // check the lifespan of the node
     // update objects within the node, tag ones that have been moved
-    (void) delta;
-    auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};
+
+    // this is more game logic
+/*     auto moved_objects = std::vector<std::reference_wrapper<std::unique_ptr<game::Object>>>{};     // for now is empty, pending game implementation
     for(auto& obj : root_->objects_){
         // this depends on obj implementation 
-        /*  if(obj->update(delta) == MOVED){
-                moved_objects.push_back(obj);
-        } */
-        (void) obj;
-    }
-    // reinsert moved objects 
+        if(obj->update(delta) == MOVED){
+            moved_objects.push_back(obj);
+            }
+           (void) obj;
+        }
+        // reinsert moved objects 
     for(auto& m_obj : moved_objects){
-        auto current = root_.get();
+        auto current = &root_;
         // while the current region does not contain the object, move up a level
         auto box = m_obj.get()->get_bounding_box();
-        while(not node_contains_object(current->bounds_, box)){
-           current = current->parent_;
+        
+        game::print_box(current->get()->bounds_);
+        while(not node_contains_object((*current)->bounds_, box)){
+            current = (*current)->parent_;
         }
-        // once the parent is found, erase and then reinsert
-        erase(m_obj);
-        //insert(current, m_obj.get()); figure out his
-    }
-
+        // once the parent is found, erase and then reinsert the object into it
+        game::print_box(current->get()->bounds_);  
+        //erase(m_obj.get());
+        insert(*current, m_obj.get());
+    } */
     // prune dead objects from the tree
     prune_leaves(delta);
-    // then look for collisions
-
-    return;
+    // then look for collisions within the node, placeholder for now
+    // read the blog for a better implementation 
 }

@@ -11,82 +11,8 @@
 #define WORLD_BOX game::BoundingBox{WORLD_MIN, WORLD_MAX}
 
 
-TEST_CASE("octree empty construction"){
-    auto otree = tree::octree(WORLD_BOX); 
-    CHECK(otree.size() == 0);
-    CHECK(otree.height() == 0);
-    CHECK(true);
-}
-
-TEST_CASE("octree define max height"){
-    auto otree = tree::octree(WORLD_BOX, 3);
-    CHECK(otree.size() == 0);
-    CHECK(otree.height() == 0);
-
-}
-
-
-TEST_CASE("octree insert"){
-    auto otree = tree::octree(WORLD_BOX);
-    // max depth is 5
-
-    // test object takes a position and size vector
-    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
-    auto test_size = game::Vector3{20.0, 20.0, 20.0};
-    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
-    auto obj_box = test_object->get_bounding_box();
-
-    std::unique_ptr<game::Object> search_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
-
-
-    otree.insert(test_object);
-    // check object was inserted
-    CHECK(otree.size() == 1);
-    
-    // 
-    auto node = otree.find_object_node(search_object);
-    CHECK(node->objects_.size() == 1);
-    
-    // check that the object fits in the node but not its children,
-    // if they do exist
-    CHECK(otree.object_in_node(node->bounds_, obj_box));
-    // check that root is a leaf, no toher nodes should be created  
-    CHECK(otree.is_leaf());
-    CHECK(otree.height() == 0);
-
-    for(auto& child : node->children_){
-        CHECK( not otree.object_in_node(child->bounds_, obj_box));
-    }
-
-
-}
-
-TEST_CASE("insert inspect"){
-    // check the qualities of the node that the object was inserted in 
-    auto otree = tree::octree(WORLD_BOX);
-    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
-    auto test_size = game::Vector3{20.0, 20.0, 20.0};
-    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
-    auto obj_box = test_object->get_bounding_box();
-
-    std::cout << "object bounding box " << std::endl;
-    game::print_box(obj_box);
-
-    std::cout << "tree bounding box pre insert " << std::endl;
-    // traverse through the tree, print the node box and the child boxes
-    otree.traverse_tree();
-    
-    otree.insert(test_object);
-    std::cout << "tree bounding box pre insert " << std::endl;
-    otree.traverse_tree();
-    
-
-}
-TEST_CASE("insert objects into children"){
-    auto otree = tree::octree(WORLD_BOX);
-
+void insert_root_and_all_children(tree::octree& otree){
     // bang in the centre of the octant
-    
     auto centre = game::Vector3Add(game::Vector3{-762, -64, -762}, game::Vector3{0, 0 ,0});
     centre = game::Vector3Scale(centre, 0.5);
     auto size = game::Vector3{10, 10, 10};
@@ -146,7 +72,75 @@ TEST_CASE("insert objects into children"){
     std::unique_ptr<game::Object> rtf = std::make_unique<game::TestObject>(centre, size, 7);
 
     otree.insert(rtf);
+}
 
+TEST_CASE("octree empty construction"){
+    auto otree = tree::octree(WORLD_BOX); 
+    CHECK(otree.size() == 0);
+    CHECK(otree.height() == 0);
+    CHECK(true);
+}
+
+TEST_CASE("octree define max height"){
+    auto otree = tree::octree(WORLD_BOX, 3);
+    CHECK(otree.size() == 0);
+    CHECK(otree.height() == 0);
+
+}
+
+
+TEST_CASE("octree insert"){
+    auto otree = tree::octree(WORLD_BOX);
+    // max depth is 5
+
+    // test object takes a position and size vector
+    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
+    auto test_size = game::Vector3{20.0, 20.0, 20.0};
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
+    auto obj_box = test_object->get_bounding_box();
+
+    std::unique_ptr<game::Object> search_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
+
+
+    otree.insert(test_object);
+    // check object was inserted
+    CHECK(otree.size() == 1);
+    
+    // 
+    auto node = otree.find_object_node(search_object);
+    CHECK(node->objects_.size() == 1);
+    
+    // check that the object fits in the node but not its children,
+    // if they do exist
+    CHECK(otree.object_in_node(node->bounds_, obj_box));
+    // check that root is a leaf, no toher nodes should be created  
+    CHECK(otree.is_leaf());
+    CHECK(otree.height() == 0);
+
+    for(auto& child : node->children_){
+        CHECK( not otree.object_in_node(child->bounds_, obj_box));
+    }
+
+
+}
+
+TEST_CASE("insert inspect"){
+    // check the qualities of the node that the object was inserted in 
+    auto otree = tree::octree(WORLD_BOX);
+    auto test_pos = game::Vector3{0.0, 0.0, 0.0};
+    auto test_size = game::Vector3{20.0, 20.0, 20.0};
+    std::unique_ptr<game::Object> test_object = std::make_unique<game::TestObject>(test_pos, test_size, 0);
+
+    // traverse through the tree, print the node box and the child boxes
+    
+    otree.insert(test_object);
+    //otree.traverse_tree();
+    
+
+}
+TEST_CASE("insert objects into children"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
     CHECK(otree.get_children().size() == 8);
     CHECK(otree.size() == 8);
 
@@ -199,7 +193,7 @@ TEST_CASE("insert to max depth"){
     auto otree_4 = tree::octree(WORLD_BOX, 4);
     auto otree_max = tree::octree(WORLD_BOX);
 
-    auto position = game::Vector3{5, 3, 5};
+    auto position = game::Vector3{5, 1.5, 5};
     auto size = game::Vector3{0.5, 0.5, 0.5};
 
     std::unique_ptr<game::Object> obj_3 = std::make_unique<game::TestObject>(position, size, 0);
@@ -227,21 +221,469 @@ TEST_CASE("insert to max depth"){
     CHECK(otree_4.height() != otree_max.height());
 
 }
-TEST_CASE("insert and erase object"){
+TEST_CASE("num nodes, just root"){
+    auto octree = tree::octree(WORLD_BOX);
+    // the root node should exist
+    CHECK(octree.num_nodes() == 1);
 
+    // insert a node, into root lbf 
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
+    std::unique_ptr<game::Object> root_rtf  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    // it has to cross the centre of rtf on at least one axis
+    octree.insert(root_rtf);
+    CHECK(octree.get_next_id() == 1);
+    octree.traverse_tree();
+    CHECK(octree.num_nodes() == 2);
+    CHECK(octree.height() == 1);
+    CHECK(octree.size() == 1);
 
+}
+TEST_CASE("num nodes, several child from root"){
+    auto octree = tree::octree(WORLD_BOX);
+    // the root node should exist
+    CHECK(octree.num_nodes() == 1);
+
+    // insert a node, into root lbf 
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
+    std::unique_ptr<game::Object> root_rtf  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(root_rtf);
+    CHECK(octree.get_next_id() == 1);
+    CHECK(octree.num_nodes() == 2);
+    
+    position = {-380.5, -31, -380.5};
+    std::unique_ptr<game::Object> root_lbb  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    
+    octree.insert(root_lbb);
+    CHECK(octree.get_next_id() == 2);
+    CHECK(octree.num_nodes() == 3);
+    
+    position = {380.5, -31, 380.5};
+    std::unique_ptr<game::Object> root_rbf  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(root_rbf);
+    CHECK(octree.get_next_id() == 3);
+    CHECK(octree.num_nodes() == 4);
+
+    CHECK(octree.size() == 3);
+    CHECK(octree.height() == 1);
+    CHECK(octree.get_children().size() == 3);
+}
+TEST_CASE("insert and erase object, single"){
+    // insert an object
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{400,2, 200};
+    auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object);
+    CHECK(octree.get_next_id() == 1);
+    CHECK(octree.size() == 1);
+    // then erase it from the tree
+    octree.erase(0);
+    CHECK(octree.size() == 0);
+    // so i remove 0 
+    CHECK(octree.get_next_id() == 1);
 }
 
 TEST_CASE("erase object not in tree"){
-
+    // attempt to erase an object not in the tree
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{400,2, 200};
+    auto size = game::Vector3{1, 1, 1};
+    CHECK(octree.get_next_id() == 0);
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    CHECK(octree.size() == 0);
+    octree.erase(0);
+    CHECK(octree.size() == 0);
+    octree.insert(object);
+    CHECK(octree.size() == 1);
+    octree.erase(3);
+    CHECK(octree.size() == 1);
 
 }
 
-TEST_CASE("insert multiple erase some"){
+TEST_CASE("clear, root only "){
+    // clear the whole tree 
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
 
+    for(auto i = 0; i < 10; ++i){
+        std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+            position, size, octree.get_next_id()
+        );
+        octree.insert(object);
+        CHECK(octree.size() == size_t(i + 1));
+    }
+    octree.clear();
+    CHECK(octree.size() == 0);
+}
+TEST_CASE("clear, objects in other nodes"){
+    auto octree = tree::octree(WORLD_BOX);
+    auto position = game::Vector3{380.5,31, 380.5};
+    auto size = game::Vector3{1, 1, 1};
+
+    std::unique_ptr<game::Object> object  = std::make_unique<game::TestObject>(
+            position, size, octree.get_next_id()
+    );
+    octree.insert(object);
+    
+    position = game::Vector3{321, 9, 300};
+    std::unique_ptr<game::Object> object_2  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_2);
+    
+    position = game::Vector3{-100, 9, -210};
+    std::unique_ptr<game::Object> object_3  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_3);
+    
+    position = game::Vector3{-600, -20, 632};
+    std::unique_ptr<game::Object> object_4  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_4);
+    
+    position = game::Vector3{452, 21, 700};
+    std::unique_ptr<game::Object> object_5  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_5);
+
+    position = game::Vector3{-300, -18, 100};
+    
+        std::unique_ptr<game::Object> object_6  = std::make_unique<game::TestObject>(
+        position, size, octree.get_next_id()
+    );
+    octree.insert(object_6);
+
+
+    CHECK(octree.size() == 6);
+    octree.clear();
+
+    CHECK(octree.size() == 0);
+}
+TEST_CASE("pruning leaves, root leaves"){
+    auto otree = tree::octree(WORLD_BOX);
+    // insert an object into root and all children
+    insert_root_and_all_children(otree);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    // insert object into each child 
+
+    // remove those objects
+    for(size_t i = 0; i < 8; ++i){
+        otree.erase(i);
+    }
+    // update
+    // nothing should be pruned until NODE
+    otree.update(1);
+    CHECK(otree.num_nodes() == 9);
+    CHECK(otree.is_empty());
+
+    otree.update(5);
+    CHECK(otree.is_empty());
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.is_empty());
+    CHECK(otree.num_nodes() == 1);
+}
+TEST_CASE("pruning leaves, do not prune"){
+    auto otree = tree::octree(WORLD_BOX);
+    
+    // populates the tree with a root node and all 8 children, each with one object
+    insert_root_and_all_children(otree);
+    
+    // insert into the next level
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    
+    //
+}
+TEST_CASE("pruning leaves, deeper in the tree"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree); // creates 
+    //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+    auto position = game::Vector3{190, 20, 201};
+    auto size = game::Vector3{1, 1, 1};
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.insert(level_2);
+
+    CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 10);
+    position = game::Vector3{95.0f, 7.5f, 92.3f};
+    
+    std::unique_ptr<game::Object> level_3 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+
+    otree.insert(level_3);
+    CHECK(otree.height() == 3);
+    CHECK(otree.size() == 10);
+    CHECK(otree.num_nodes() == 11);
+
+    otree.erase(otree.get_next_id() -1 );
+    CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 11);
+    
+    otree.update(2);
+    CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 11);
+
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.size() == 9);
+    CHECK(otree.num_nodes() == 10);
+    // something is going wrong after pruning this
+
+    std::cout << "==========================================================" << std::endl;
+    otree.traverse_tree();
+}
+TEST_CASE("pruning leaves, resetting counter by reinsterting"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree); // creates a node in each direct child of the root
+
+    //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+
+    // populating the first two levels of the tree
+    auto position = game::Vector3{190, 20, 201};
+    auto size = game::Vector3{1, 1, 1};
+    
+
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2);
+
+    position = game::Vector3{200, 10, -30};
+    std::unique_ptr<game::Object> level_2_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2_1);
+
+    position = game::Vector3{300, -10, 180};
+    std::unique_ptr<game::Object> level_1_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_1);
+    position = game::Vector3{600, 5, 400};
+    std::unique_ptr<game::Object> level_0 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_0);
+    position = game::Vector3{-390, -19, 147};
+    std::unique_ptr<game::Object> level_1_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_2);
+
+    position = game::Vector3{95.0f, 7.5f, 92.3f};
+    std::unique_ptr<game::Object> level_3 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_3);
+
+
+    std::unique_ptr<game::Object> level_3_reinsert = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );    
+
+    CHECK(otree.size() == 14);
+
+    // erasing and reinserting before life counter reaches node lifetime means that the leaf should not be pruned
+    // rather, the number of nodes should not change
+
+    auto nodes = otree.num_nodes();
+    otree.update(NODE_LIFETIME + 1); // 31 
+    CHECK(nodes == otree.num_nodes());
+
+    otree.erase(otree.get_next_id() -1 );
+    otree.update(NODE_LIFETIME - 2); // 29
+    CHECK(nodes == otree.num_nodes());
+    CHECK(otree.size() == 13);
+
+    otree.insert(level_3_reinsert);
+    otree.update(1); // the leafs counter should be reset
+    CHECK(otree.size() == 14);
+    
+    CHECK(nodes == otree.num_nodes());
+    otree.update(NODE_LIFETIME);
+    CHECK(nodes == otree.num_nodes()); // no leaves should be pruned because the are not empty
+
+    otree.erase(otree.get_next_id() - 1);
+    otree.update(NODE_LIFETIME + 1);
+    CHECK(otree.num_nodes() == nodes - 1); // now it should be remvoed
 }
 
-TEST_CASE("erase a whole node"){
+TEST_CASE("prune leaves, cascading"){
 
+    // leaves that die at different times
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
 
+    CHECK(otree.size() == 8);
+    CHECK(otree.num_nodes() == 9);
+
+    // update 15
+    otree.erase(7);
+    otree.update(NODE_LIFETIME / 2);
+    otree.erase(6);
+
+    CHECK(otree.size() == 6);
+    CHECK(otree.num_nodes() == 9);
+    
+    otree.update(NODE_LIFETIME / 2);
+    // a node should be gone, but only one
+    CHECK(otree.num_nodes() == 8);
+    
+    otree.update(NODE_LIFETIME / 2);
+    // another node should be gone
+    CHECK(otree.num_nodes() == 7);
+    
+    otree.erase(5);
+    otree.erase(4);
+    otree.update(NODE_LIFETIME);
+    CHECK(otree.num_nodes() == 5);
+
+    otree.erase(3);
+    otree.update(NODE_LIFETIME / 2);
+
+    otree.erase(2);
+    otree.erase(1);
+    otree.update(NODE_LIFETIME);
+
+    CHECK(otree.num_nodes() == 2);
+}
+
+TEST_CASE("get objects, all in the tree"){
+    auto otree = tree::octree(WORLD_BOX);
+    SECTION("empty tree"){
+        auto tree_objects = otree.get_objects();
+        CHECK(tree_objects.size() == 0);
+
+    }
+    SECTION("non-empty tree"){
+        insert_root_and_all_children(otree);
+        auto tree_objects = otree.get_objects();
+        CHECK(tree_objects.size() == 8);
+    }
+}
+
+TEST_CASE("get objects, all within a certain bounding box"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
+
+    auto bounds = WORLD_BOX;
+    auto predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
+
+    auto tree_objects = otree.get_objects(predicate);
+    CHECK(tree_objects.size() == otree.size());
+
+    bounds = game::BoundingBox{
+        game:: Vector3{0,0,0},
+        WORLD_BOX.max
+    };
+    auto new_predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
+    
+    tree_objects = otree.get_objects(new_predicate);
+    CHECK(tree_objects.size() == 1);
+    // only checking one child 
+}
+TEST_CASE("get objects, all within a certain bounding box, checking recursive inclusion of children"){
+    auto otree = tree::octree(WORLD_BOX);
+    insert_root_and_all_children(otree);
+
+    // insert one more into the 
+
+    // and go recursively down that path
+    
+   //  762, 64, 762
+    // 381, 32, 381
+    // 190.5, 16, 190.5
+    // 95.25, 8, 92.25
+
+    // populating the first two levels of the tree
+    auto position = game::Vector3{500, 35, 600};
+    auto size = game::Vector3{1, 1, 1};
+    std::unique_ptr<game::Object> level_2 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2);
+
+    position = game::Vector3{700, 62, 650};
+    std::unique_ptr<game::Object> level_2_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_2_1);
+
+    position = game::Vector3{400, 43, 521};
+    std::unique_ptr<game::Object> level_1_1 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_1_1);
+    position = game::Vector3{200, 18, 200};
+    std::unique_ptr<game::Object> level_0 = std::make_unique<game::TestObject>(
+        position, size, otree.get_next_id()
+    );
+    otree.insert(level_0);
+    CHECK(otree.size() == 12);
+
+    auto  bounds = game::BoundingBox{
+        game:: Vector3{0,0,0},
+        WORLD_BOX.max
+    };
+    auto new_predicate = [bounds](auto& object) -> bool{
+        auto object_bounds = object->get_bounding_box();
+        return object_bounds.min.x >= bounds.min.x and object_bounds.min.y >= bounds.min.y and object_bounds.min.z >= bounds.min.z 
+        and object_bounds.max.x <= bounds.max.x and object_bounds.max.y <= bounds.max.y and object_bounds.max.z <=  bounds.max.z;
+    };
+    
+    auto tree_objects = otree.get_objects(new_predicate);
+    CHECK(tree_objects.size() == 5);
 }
